@@ -1,10 +1,10 @@
 ---
-title: "Miniproyecto"
-author: "juan antonio zarceño goznalez, Carla Giménez Piqueres"
-date: "2026-04-06"
-output: html_document
+title: "Análisis de la Tasa de Paro en España"
+author: "juan antonio zarceño gonzalez, Carla Giménez Piqueres"
+output: 
+  rticles::mdpi_article:
+    keep_tex: true
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -46,6 +46,22 @@ library(ggplot2)
 
 ggplot(data = datos_limpios, 
        mapping = aes(x = reorder(`Comunidades y Ciudades Autónomas`, Total), y = Total, fill = Sexo)) + geom_bar(stat = "identity", position = "dodge") + coord_flip() +
-labs(title = "Tasa de Paro por CCAA y Sexo", x = "Comunidad Autónoma", y = "Tasa de Paro (%)", fill = "Sexo") + theme_minimal()
+labs(title = "Tasa de Paro por CCAA y Sexo", x = "Comunidad Autónoma", y = "Tasa de Paro (%)", fill = "Sexo") + theme_classic()
 ```
+Análisis figura 1: 
+En este gráfico se observa que las Comunidades Autónomas de Ceuta y Melilla presentan las tasas de paro más elevadas de España. Además se aprecia una brecha de género, siendo la tasa de paro femenina (barras de color azul) superior a la masculina enla mayoria de comunidades. 
 
+
+2) Figura 2: Boxplot para detección de outliers por Sexo 
+```{r}
+library(ggplot2)
+
+ggplot(data = datos_limpios, aes(x = Sexo, y = Total, fill = Sexo)) +
+  geom_boxplot(outlier.color = "lightblue", outlier.shape = 16) +
+  labs(title = "Figura 2: Outliers en la Tasa de Paro",
+       x = "Sexo",
+       y = "Tasa (%)") +
+  theme_classic()
+```
+Análisis figura 2: 
+El boxplot muestra que la mediana de la tasa de paro es superior en las mujeres, confirmando la brecha de género. Los puntos azul claro representan los outliers o valores atípicos, que corresponden a las ciudades de Ceuta y Melilla. Estos casos presentan tasas de desemppleo excepcionalmente altas que se alejan del comportamiento del resto de comunidades autónomas. 

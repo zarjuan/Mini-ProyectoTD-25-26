@@ -1,0 +1,39 @@
+---
+title: "Miniproyecto"
+author: "juan antonio zarceño goznalez, Carla Giménez Piqueres"
+date: "2026-04-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+1.Introducción.
+  
+```{r}
+library(readr)
+datos <- read_delim("data/65334.csv", 
+                    delim = ";", 
+                    escape_double = FALSE, 
+                    trim_ws = TRUE)
+#LIMPIEZA DE LOS DATOS, PARA QUE QUEDEN BIEN
+datos$Total <- as.numeric(gsub(",", ".", datos$Total))
+datos_limpios <- subset(
+  datos,
+  Sexo != "Ambos sexos" &
+  Edad != "Total" &
+  `Comunidades y Ciudades Autónomas` != "Total Nacional"
+)
+
+```
+
+##Preguntas de investigación
+
+1) ¿Qué comunidad autónoma tiene la tasa de paro más alta actualmente? 
+
+2) ¿Existe una brecha real entre el paro masculino y femenino en los jóvenes? 
+
+3) ¿Cómo afecta la edad a la probabilidad de estar en paro? 
+

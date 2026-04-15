@@ -1,6 +1,6 @@
 ---
 title: "Miniproyecto"
-author: "juan antonio zarceño goznalwz"
+author: "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres, María José Monsonís Llopis, Alejandro Manuel Tejera Nuñez, Rubén García Lajara"
 date: "2026-04-06"
 output: html_document
 ---
@@ -8,28 +8,55 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-1.Introducción.
-  
-  
-  
-  
-  
-  
-  
-  
-  
-```{r}
-library(readr)
-datos <- read_delim("65334.csv", delim = ";", 
-    escape_double = FALSE, trim_ws = TRUE)
-#LIMPIEZA DE LOS DATOS, PARA QUE QUEDEN BIEN
-datos$Total <- as.numeric(gsub(",", ".", datos$Total))
-datos_limpios <- subset(
-  datos,
-  Sexo != "Ambos sexos" &
-  Edad != "Total" &
-  `Comunidades y Ciudades Autónomas` != "Total Nacional"
-)
 
+### Introducción
+
+En este trabajo tenemos como objetivo realizar un analisis sobre la interaccion de los usuarios con el aula virtual. Para ello, partimos de una base de datos la cual usaremos para extraer las conclusiones necesarias y responder a las preguntas propuestas.
+
+Preguntas:
+
+¿como se distribuye la actividad de los usuaros del aula virtual a lo largo de la semana?
+¿se observa un gran cambio entre los dias escolares y los fines de semana?
+
+¿se ve una diferencia notable entre el uso de apartados como calificaciones o tareas entre los usuarios alumnos y el uso de los apartados como calificador en los profesores, sabiendo que el numero de alumnos es mucho mayor al de docentes?
+
+viendo que sistema es el que mas frecuencia tiene, ¿podemos saber si corresponde a usuarios que entran y salen rapidamente, o a usuarios que entran y hacen una exploracion profunda de todos los materiales que hay en el aula virtual?
+
+viendo el pico sobretodo en el apartado de tareas y cualificaciones, podemos identificar directamente, todo ese numero de usuarios o segun los demas apartados y el flujo de estos podemos tambien deducir que un porcentaje es de profesores?
+
+
+### Importación
+
+```{r}
+logs <- read.csv("data/logs_moodle_anon.csv")
+ 
 ```
 
+### Figura
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+resumen_datos<- logs %>% 
+  count(Componente) %>% 
+  slice_max(n, n=10) #cuenta los 10 componentes con más registros para no saturar el grafico 
+
+ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+ 
+  geom_col(fill='lightblue')+
+  coord_flip() + #girar el grafico para que se lean bien los nombres
+  labs(title= '10 componentes con mayor actividad', 
+       x='componente de Moodle', 
+       y= 'Número total de eventos') + 
+  theme_minimal()
+```
+Como se puede ver en la Figura 1, hemos representado los 10 componentes donde más clics hacen los alumnos. El componente Sistema es el que más actividad tiene, lo que es lógico porque cuenta cada vez que alguien entra o navega por el aula virtual. También se nota mucho movimiento en Tarea y Cuestionario, ya que son las partes fundamentales para entregar trabajos y hacer exámenes. Por otro lado, cosas como Archivo o URL tienen barras mucho más pequeñas; esto no significa que no se usen, sino que los alumnos entran, se bajan el PDF y ya está, no generan tantos eventos seguidos como cuando estás haciendo una entrega.
+
+### Tabla
+
+```{r}
+table(logs$Componente)
+```
+Tabla 1
+
+La tabla 1 revela la frecuencia de utilización de varios componentes del Aula virtual. Observamos que casi toda la acción se centra en Sistema, Tarea y Cuestionario. Esto nos dice que, los usuarios emplean la plataforma, principalmente, para navegar, entregar tareas y tomar evaluaciones. En contraste, otros componentes no se usan mucho, implicando, menor importancia en el curso para los estudiantes, como puede ser los Registros, el Wooclap, el Taller o la Participación en el curso.

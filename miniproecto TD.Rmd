@@ -18,7 +18,7 @@ Preguntas:
 ### Importación
 
 ```{r}
-
+logs_td <- read.csv("~/Programacion/Proyecto_R/Estudiantes/Mini-ProyectoTD-25-26/data/logs_moodle_anon.csv")
 ```
 
 ### Figura

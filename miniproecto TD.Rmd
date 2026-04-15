@@ -18,7 +18,8 @@ Preguntas:
 ### Importación
 
 ```{r}
-logs_td <- read.csv("~/Programacion/Proyecto_R/Estudiantes/Mini-ProyectoTD-25-26/data/logs_moodle_anon.csv")
+logs <- read.csv("data/logs_moodle_anon.csv")
+ 
 ```
 
 ### Figura
@@ -31,6 +32,8 @@ logs_td <- read.csv("~/Programacion/Proyecto_R/Estudiantes/Mini-ProyectoTD-25-26
 ### Tabla
 
 ```{r}
-
+table(logs$Componente)
 ```
+Tabla 1
 
+La tabla 1 revela la frecuencia de utilización de varios componentes del Aula virtual. Observamos que casi toda la acción se centra en Sistema, Tarea y Cuestionario. Esto nos dice que, los usuarios emplean la plataforma, principalmente, para navegar, entregar tareas y tomar evaluaciones. En contraste, otros componentes no se usan mucho, implicando, menor importancia en el curso para los estudiantes, como puede ser los Registros, el Wooclap, el Taller o la Participación en el curso.

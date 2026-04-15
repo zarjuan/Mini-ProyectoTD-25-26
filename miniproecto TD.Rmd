@@ -8,28 +8,29 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-1.Introducción.
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+### Introducción
+
+(Solo las preguntas)
+
+Preguntas:
+
+### Importación
+
 ```{r}
-library(readr)
-datos <- read_delim("65334.csv", delim = ";", 
-    escape_double = FALSE, trim_ws = TRUE)
-#LIMPIEZA DE LOS DATOS, PARA QUE QUEDEN BIEN
-datos$Total <- as.numeric(gsub(",", ".", datos$Total))
-datos_limpios <- subset(
-  datos,
-  Sexo != "Ambos sexos" &
-  Edad != "Total" &
-  `Comunidades y Ciudades Autónomas` != "Total Nacional"
-)
+
+```
+
+### Figura
+
+```{r}
+
+```
+
+
+### Tabla
+
+```{r}
 
 ```
 

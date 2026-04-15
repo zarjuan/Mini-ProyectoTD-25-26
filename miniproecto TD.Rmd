@@ -1,6 +1,6 @@
 ---
 title: "Miniproyecto"
-author: "juan antonio zarceño goznalwz"
+author: "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres, María José Monsonís Llopis, Alejandro Manuel Tejera Nuñez, Rubén García Lajara"
 date: "2026-04-06"
 output: html_document
 ---

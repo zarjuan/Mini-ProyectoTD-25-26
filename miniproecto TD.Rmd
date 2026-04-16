@@ -2,7 +2,8 @@
 title: "Miniproyecto"
 author: "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres, María José Monsonís Llopis, Alejandro Manuel Tejera Nuñez, Rubén García Lajara"
 date: "2026-04-06"
-output: html_document
+output:
+  bookdown::html_document2: default
 ---
 
 ```{r setup, include=FALSE}
@@ -36,12 +37,9 @@ logs <- read.csv("data/logs_moodle_anon.csv")
 
 ### Figura
 
-```{r}
-#necesitaremos las libreraias ggplot2, y la dplyr para poder trabajar, por lo tanto, las descargamos:
+```{r fig-componentes, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual"}
 library(ggplot2)
 library(dplyr)
-
-
 resumen_datos<- logs %>% 
   count(Componente) %>% 
   slice_max(n, n=10) #cuenta los 10 componentes con más registros para no saturar el grafico 
@@ -55,7 +53,7 @@ ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+
   theme_minimal()
 ```
 
-En la Figura 1 se puede observar un diagrama de barras mostrando arriba los casos más frecuentes dentro de la columna "COMPONENTES" con barras mas grandes en función del número de veces que se repite cada caso. Claramente que la actividad de los usuarios no se distribuye de forma uniforme entre los distintos componentes de la plataforma. El componente "Sistema" destaca de manera muy notable respecto al resto, acumulando el mayor número de eventos. Esto es lógico, poreuq representa muchas distintas y diversas acciones  como el acceso al aula virtual y la navegación entre secciones del aula virtual, lo que provoca que se registre actividad constante por parte de todos los usuarios.
+En la figura \@ref(fig:fig-componentes) se puede observar un diagrama de barras mostrando arriba los casos más frecuentes dentro de la columna "COMPONENTES" con barras mas grandes en función del número de veces que se repite cada caso. Claramente que la actividad de los usuarios no se distribuye de forma uniforme entre los distintos componentes de la plataforma. El componente "Sistema" destaca de manera muy notable respecto al resto, acumulando el mayor número de eventos. Esto es lógico, poreuq representa muchas distintas y diversas acciones  como el acceso al aula virtual y la navegación entre secciones del aula virtual, lo que provoca que se registre actividad constante por parte de todos los usuarios.
 
 Después, están los componentes "Tarea" y "Cuestionario", que también presentan valores elevados, aunque bastante por debajo de "Sistema". Esto se explica porque son herramientas fundamentales a lo largo de la evaluación continua del curso. Estas actividades requieren múltiples interacciones, lo que incrementa significativamente el número de eventos registrados. Por otro lado, el resto de componentes aparecen con valores mucho más pequeños, lo que se refleja en barras considerablemente más pequeñas en el gráfico. Componentes como "Carpeta", "Asistencia" o "Usuario" muestran cierta actividad, pero claramente inferior a los principales. 
 

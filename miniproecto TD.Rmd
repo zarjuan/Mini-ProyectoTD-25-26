@@ -28,6 +28,7 @@ viendo el pico sobretodo en el apartado de tareas y cualificaciones, podemos ide
 ### Importación
 
 ```{r}
+#primero cargamos los datos
 logs <- read.csv("data/logs_moodle_anon.csv")
  
 ```
@@ -35,6 +36,7 @@ logs <- read.csv("data/logs_moodle_anon.csv")
 ### Figura
 
 ```{r}
+#y cargamos las librerias
 library(ggplot2)
 library(dplyr)
 
@@ -47,7 +49,7 @@ ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+
   coord_flip() + #girar el grafico para que se lean bien los nombres
   labs(title= '10 componentes con mayor actividad', 
        x='componente de Moodle', 
-       y= 'Número total de eventos') + 
+       y= 'numero total de eventos') + 
   theme_minimal()
 ```
 Como se puede ver en la Figura 1, hemos representado los 10 componentes donde más clics hacen los alumnos. El componente Sistema es el que más actividad tiene, lo que es lógico porque cuenta cada vez que alguien entra o navega por el aula virtual. También se nota mucho movimiento en Tarea y Cuestionario, ya que son las partes fundamentales para entregar trabajos y hacer exámenes. Por otro lado, cosas como Archivo o URL tienen barras mucho más pequeñas; esto no significa que no se usen, sino que los alumnos entran, se bajan el PDF y ya está, no generan tantos eventos seguidos como cuando estás haciendo una entrega.

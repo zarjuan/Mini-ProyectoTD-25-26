@@ -17,14 +17,17 @@ En este trabajo tenemos como objetivo realizar un analisis sobre la interaccion 
 
 Preguntas:
 
-¿como se distribuye la actividad de los usuaros del aula virtual a lo largo de la semana?
-¿se observa un gran cambio entre los dias escolares y los fines de semana?
+En cuanto a la actividad semanal: 
+¿Qué días de la semana se usa más el aula virtual y cuánto cae el uso el sábado y el domingo?
 
-¿se ve una diferencia notable entre el uso de apartados como calificaciones o tareas entre los usuarios alumnos y el uso de los apartados como calificador en los profesores, sabiendo que el numero de alumnos es mucho mayor al de docentes?
+En cuanto a los roles: 
+Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas), ¿quién interactúa más con esa sección proporcionalmente a su grupo?
 
-viendo que sistema es el que mas frecuencia tiene, ¿podemos saber si corresponde a usuarios que entran y salen rapidamente, o a usuarios que entran y hacen una exploracion profunda de todos los materiales que hay en el aula virtual?
+En cuanto al comportamiento del usuario (Sistema):
+El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
 
-viendo el pico sobretodo en el apartado de tareas y cualificaciones, podemos identificar directamente, todo ese numero de usuarios o segun los demas apartados y el flujo de estos podemos tambien deducir que un porcentaje es de profesores?
+En cuanto a deducción de perfiles:
+Cuando vemos mucha actividad en "Tareas", ¿podemos saber cuántos son profesores solo por cómo se mueven por el resto de la web, o es imposible distinguirlos de los alumnos?
 
 
 ### Importación
@@ -48,28 +51,27 @@ ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+
   geom_col(fill='lightblue')+
   coord_flip() + #girar el grafico para que se lean bien los nombres
   labs(title= '10 componentes con mayor actividad', 
-       x='componente de Moodle', 
-       y= 'numero total de eventos') + 
+       x='componente de Moodle',  y= 'numero total de eventos') + 
   theme_minimal()
 ```
+En la Figura \@ref(fig:fig-componentes) se puede ver de forma muy clara cómo se reparte el uso del aula virtual. Lo que más llama la atención es que la actividad no es equilibrada: el componente "Sistema" tiene la barra más alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un usuario entra o se mueve por las secciones, el sistema lo registra.
 
-En la figura \@ref(fig:fig-componentes) se puede observar un diagrama de barras mostrando arriba los casos más frecuentes dentro de la columna "COMPONENTES" con barras mas grandes en función del número de veces que se repite cada caso. Claramente que la actividad de los usuarios no se distribuye de forma uniforme entre los distintos componentes de la plataforma. El componente "Sistema" destaca de manera muy notable respecto al resto, acumulando el mayor número de eventos. Esto es lógico, poreuq representa muchas distintas y diversas acciones  como el acceso al aula virtual y la navegación entre secciones del aula virtual, lo que provoca que se registre actividad constante por parte de todos los usuarios.
-
-Después, están los componentes "Tarea" y "Cuestionario", que también presentan valores elevados, aunque bastante por debajo de "Sistema". Esto se explica porque son herramientas fundamentales a lo largo de la evaluación continua del curso. Estas actividades requieren múltiples interacciones, lo que incrementa significativamente el número de eventos registrados. Por otro lado, el resto de componentes aparecen con valores mucho más pequeños, lo que se refleja en barras considerablemente más pequeñas en el gráfico. Componentes como "Carpeta", "Asistencia" o "Usuario" muestran cierta actividad, pero claramente inferior a los principales. 
-
-La gráfica permite identificar de forma visual como se distribuye la actividad de los alumnos en el aula virtual y que acciones o actividades son más frecuentes.
-
+Después de la navegación básica, lo que más movimiento genera son las "Tareas" y los "Cuestionarios". Sus barras son altas porque son las herramientas que los alumnos usan para trabajar y examinarse. Por el contrario, el resto de componentes (como "Carpeta" o "Asistencia") tienen barras muy pequeñas, lo que indica que se usan de forma mucho más específica o menos frecuente.
 
 
 ### Tabla
 
-```{r}
-table(logs$Componente)
-```
-Tabla 1
+```{r tabla-componentes}
+df_componentes<- as.data.frame(table(logs$Componente))
+colnames(df_componentes)<- c("Componente", "Frecuencia")
 
-En la Tabla 1 se puede observar el recuento de todos los casos dentro de la columna "Componente", donde se muestra el número de veces que aparece cada uno de ellos. A diferencia de la gráfica, aquí no se representa de forma visual, sino que se pueden ver los valores exactos, lo que permite analizar con más precisión la actividad de los usuarios.Se vuelve a apreciar claramente que la actividad no se distribuye de forma uniforme, ya que el componente "Sistema" presenta una diferencia muy grande respecto al resto, acumulando el mayor número de eventos. Esto es coherente con lo comentado anteriormente, porque incluye muchas acciones distintas como el acceso o la navegación dentro del aula virtual, lo que hace que se registre constantemente.
+knitr::kable(df_componentes, 
+             caption="Frecuencia de uso por componentes del aula virtual", 
+             booktabs=TRUE)
+```
+
+En la tabla \@ref(fig:tabla-componentes) se puede observar el recuento de todos los casos dentro de la columna "Componente", donde se muestra el número de veces que aparece cada uno de ellos. A diferencia de la gráfica, aquí no se representa de forma visual, sino que se pueden ver los valores exactos, lo que permite analizar con más precisión la actividad de los usuarios.Se vuelve a apreciar claramente que la actividad no se distribuye de forma uniforme, ya que el componente "Sistema" presenta una diferencia muy grande respecto al resto, acumulando el mayor número de eventos. Esto es coherente con lo comentado anteriormente, porque incluye muchas acciones distintas como el acceso o la navegación dentro del aula virtual, lo que hace que se registre constantemente.
 
 Después, aparecen los componentes "Tarea" y "Cuestionario", que también tienen valores bastante altos, aunque alejados de "Sistema". Esto se debe a que forman parte fundamental del desarrollo del curso, ya que los alumnos los utilizan para entregar actividades y realizar evaluaciones, generando así bastantes interacciones.Por otro lado, se pueden ver componentes con valores intermedios como "Carpeta", "Asistencia", "Usuario" o "Archivos enviados", que aunque no destacan tanto, sí tienen cierta presencia dentro del uso habitual de la plataforma. Finalmente, hay otros componentes con valores muy bajos, lo que indica que su uso es mucho más limitado o puntual.
 
-La tablaa permite ver de forma más detallada cómo se reparte la actividad entre los distintos componentes y confirmar lo que ya se observaba en la gráfica, que la mayoría de interacciones se concentran en unos pocos elementos principales del aula virtual
+La tabla permite ver de forma más detallada cómo se reparte la actividad entre los distintos componentes y confirmar lo que ya se observaba en la gráfica, que la mayoría de interacciones se concentran en unos pocos elementos principales del aula virtual

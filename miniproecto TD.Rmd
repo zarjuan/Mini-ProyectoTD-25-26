@@ -26,6 +26,7 @@ Si comparamos el uso de las notas (los alumnos para verlas y los profes para pon
 En cuanto al comportamiento del usuario (Sistema):
 El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
 
+
 En cuanto a deducción de perfiles:
 Cuando vemos mucha actividad en "Tareas", ¿podemos saber cuántos son profesores solo por cómo se mueven por el resto de la web, o es imposible distinguirlos de los alumnos?
 
@@ -75,3 +76,31 @@ En la tabla \@ref(fig:tabla-componentes) se puede observar el recuento de todos 
 Después, aparecen los componentes "Tarea" y "Cuestionario", que también tienen valores bastante altos, aunque alejados de "Sistema". Esto se debe a que forman parte fundamental del desarrollo del curso, ya que los alumnos los utilizan para entregar actividades y realizar evaluaciones, generando así bastantes interacciones.Por otro lado, se pueden ver componentes con valores intermedios como "Carpeta", "Asistencia", "Usuario" o "Archivos enviados", que aunque no destacan tanto, sí tienen cierta presencia dentro del uso habitual de la plataforma. Finalmente, hay otros componentes con valores muy bajos, lo que indica que su uso es mucho más limitado o puntual.
 
 La tabla permite ver de forma más detallada cómo se reparte la actividad entre los distintos componentes y confirmar lo que ya se observaba en la gráfica, que la mayoría de interacciones se concentran en unos pocos elementos principales del aula virtual
+
+
+**Fase 2**
+
+
+- PREGUNTA 4
+En cuanto al comportamiento del usuario (Sistema):
+El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
+
+```{r fig-comportamiento, fig.cap="distribución de tiepos entre acciones en el componente sistema"}
+library(tidyverse)
+library(lubridate)
+
+logs_sistema <- logs %>%
+  mutate(Hora_dt = parse_date_time(Hora, orders = c("dmy HMS", "dmy HM"))) %>%
+  arrange(Nombre.completo.del.usuario, Hora_dt) %>%
+  group_by(Nombre.completo.del.usuario) %>%
+  mutate(Dif_Minutos = as.numeric(difftime(Hora_dt, lag(Hora_dt), units = "mins"))) %>%
+  filter(Componente == "Sistema", !is.na(Dif_Minutos))
+
+ggplot(logs_sistema, aes(x = Dif_Minutos)) +
+  geom_histogram(binwidth = 0.5, fill = "lightpink", color = "white") +
+  coord_cartesian(xlim = c(0, 10), ylim = c(0, 5000)) +
+  labs(title = "Comportamiento",
+       x = "Minutos entre acciones", 
+       y = "Frecuencia")
+```
+Según el gráfico  \@ref(fig:fig-comportamiento), el comportamiento predominante en el componente 'Sistema' es el de 'entrar y salir' (consultas rápidas), ya que el histograma tiene concentracion de frecuencias en el intervalo de 0 a 1 minuto, por lo que la mayoria de interacciones son cortos minutos de actividad. La distribución está sesgada a la derecga, donde la frecuencia es mucho menor después de los primeros dos minutos, por lo que no hay una navegación duradera, sino que los usuarios acceden para hacer acciones breves. 

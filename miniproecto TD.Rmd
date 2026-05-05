@@ -185,8 +185,11 @@ ggplot(logs_sistema, aes(x = Dif_Minutos)) +
        x = "Minutos entre acciones", 
        y = "Frecuencia")
 ```
-Según el gráfico  \@ref(fig:fig-comportamiento), el comportamiento predominante en el componente 'Sistema' es el de 'entrar y salir' (consultas rápidas), ya que el histograma tiene concentracion de frecuencias en el intervalo de 0 a 1 minuto, por lo que la mayoria de interacciones son cortos minutos de actividad. La distribución está sesgada a la derecga, donde la frecuencia es mucho menor después de los primeros dos minutos, por lo que no hay una navegación duradera, sino que los usuarios acceden para hacer acciones breves. 
+Mirando la gráfica \@ref(fig:fig-comportamiento) podemos observar cómo se distribuye el tiempo que pasa entre una acción y otra dentro del componente 'Sistema'. Se ve claramente que el comportamiento principal es el de "entrar y salir", es decir, realizar consultas muy rápidas. Esto se nota porque la mayor parte de las acciones se concentran en el primer intervalo, específicamente entre los 0 y 1 minuto, donde se superan los 5.000 registros de frecuencia.
 
+A medida que aumenta el tiempo en el eje horizontal, observamos que la frecuencia decrece de forma drástica. Si comparamos la actividad del primer minuto frente a la que ocurre a partir de los cinco minutos, la diferencia es muy notable, ya que el volumen de interacciones disminuye hasta ser casi inexistente. Esta tendencia descendente nos indica que no existe una navegación duradera, sino que los usuarios acceden para realizar tareas breves y concretas, terminando su actividad en muy poco tiempo.
+
+En conclusión, podemos decir que el uso del sistema se basa en interacciones de corta duración. La gráfica presenta una curva de descenso rápido, lo que confirma que la gran mayoría de las sesiones duran apenas unos segundos y que son muy pocos los casos en los que los usuarios mantienen una actividad continuada más allá de los dos o tres minutos.
 
 
 - PREGUNTA 5
@@ -227,5 +230,18 @@ En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una
 
 
 
+- PREGUNTA 7
+¿Qué peso tiene la comunicación (Foros y Mensajes) dentro del uso total del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo como un almacén de archivos?
+```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros"}
+comunicacion_vs_recursos<- logs %>%
+  filter(Componente %in% c("Foro", "Mensajes", "Carpeta", "Archivo"))
 
+tabla_uso<- table(comunicacion_vs_recursos$Componente)
 
+barplot(tabla_uso, main="Uso de Comunicación vs Recursos", col="lavender", xlab="Componente", ylab="Número de interacciones")
+```
+Si analizamos la figura \@ref(fig:fig-comunicacion) que compara el uso de los distintos componentes, se hace evidente una gran diferencia entre el acceso a materiales y la interacción social. Predomina, de manera casi exclusiva, el uso de las carpetas de contenidos frente a la participación en foros. Esta diferencia sugiere que el alumnado percibe el aula virtual como una herramienta de consulta y descarga de documentación más que como un espacio de debate o intercambio comunicativo. 
+
+Al observar los datos cuantitativos, vemos que el componente "Carpeta" registra más de 3.000 interacciones, mientras que el "Foro" presenta una actividad mínima en comparación. Si establecemos una comparativa porcentual, el acceso a recursos supone prácticamente la totalidad de las acciones analizadas en esta categoría, dejando la comunicación en un segundo plano muy alejado. Esto confirma que la utilidad principal de la plataforma para los usuarios es la obtención de materiales para el estudio personal. 
+
+Como conclusión, los datos reflejan que el aula virtual funciona esencialmente como un almacén de archivos. No existe un hábito de interaccion dentro del sistema, ya que los usuarios concentran sus esfuerzos en gestionar el contenido, ignorando las herramientas de comunicación disponibles. 

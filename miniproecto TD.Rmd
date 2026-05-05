@@ -1,9 +1,54 @@
 ---
-title: "Miniproyecto"
+title: "iniproyecto Tratamiento de los datos"
 author: "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres, María José Monsonís Llopis, Alejandro Manuel Tejera Nuñez, Rubén García Lajara"
-date: "2026-04-06"
+date: "`r Sys.Date()`"
 output:
-  bookdown::html_document2: default
+  bookdown::html_document2:
+    echo: true
+    number_sections: true
+    theme: spacelab
+    toc: true
+    figure_caption: "Figura"
+    table_caption: "Tabla"
+  html_document:
+    echo: true
+    number_sections: true
+    theme: lumen
+    toc: true
+  html_notebook:
+    echo: true
+    number_sections: true
+    toc: true
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+  bookdown::pdf_document2:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    figure_caption: "Figura" # Referencias en castellano
+    table_caption: "Tabla"
+always_allow_html: true
+params:
+  lang: ES
+lang: "`r switch(params$lang, ES = 'es-ES', EN = 'en-US')`"
+subtitle: "Tratamiento de los Datos. Grado en Ciencia de Datos- UV"
+language:
+  label:
+    fig: 'Figura '
+    tab: 'Tabla '
+    eq: 'Ecuación '
+    thm: 'Teorema '
+    lem: 'Lema '
+    def: 'Definición '
+    cor: 'Corolario '
+    prp: 'Proposición '
+    exm: 'Ejemplo '
+    exr: 'Ejercicio '
+    proof: 'Demostración. '
+    remark: 'Nota: '
+    solution: 'Solución. '
 ---
 
 ```{r setup, include=FALSE}
@@ -29,6 +74,9 @@ El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es 
 
 En cuanto a deducción de perfiles:
 Cuando vemos mucha actividad en "Tareas", ¿podemos saber cuántos son profesores solo por cómo se mueven por el resto de la web, o es imposible distinguirlos de los alumnos?
+
+
+¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
 
 
 ### Importación
@@ -71,7 +119,7 @@ knitr::kable(df_componentes,
              booktabs=TRUE)
 ```
 
-En la tabla \@ref(fig:tabla-componentes) se puede observar el recuento de todos los casos dentro de la columna "Componente", donde se muestra el número de veces que aparece cada uno de ellos. A diferencia de la gráfica, aquí no se representa de forma visual, sino que se pueden ver los valores exactos, lo que permite analizar con más precisión la actividad de los usuarios.Se vuelve a apreciar claramente que la actividad no se distribuye de forma uniforme, ya que el componente "Sistema" presenta una diferencia muy grande respecto al resto, acumulando el mayor número de eventos. Esto es coherente con lo comentado anteriormente, porque incluye muchas acciones distintas como el acceso o la navegación dentro del aula virtual, lo que hace que se registre constantemente.
+En la tabla \@ref(tab:tabla-componentes) se puede observar el recuento de todos los casos dentro de la columna "Componente", donde se muestra el número de veces que aparece cada uno de ellos. A diferencia de la gráfica, aquí no se representa de forma visual, sino que se pueden ver los valores exactos, lo que permite analizar con más precisión la actividad de los usuarios.Se vuelve a apreciar claramente que la actividad no se distribuye de forma uniforme, ya que el componente "Sistema" presenta una diferencia muy grande respecto al resto, acumulando el mayor número de eventos. Esto es coherente con lo comentado anteriormente, porque incluye muchas acciones distintas como el acceso o la navegación dentro del aula virtual, lo que hace que se registre constantemente.
 
 Después, aparecen los componentes "Tarea" y "Cuestionario", que también tienen valores bastante altos, aunque alejados de "Sistema". Esto se debe a que forman parte fundamental del desarrollo del curso, ya que los alumnos los utilizan para entregar actividades y realizar evaluaciones, generando así bastantes interacciones.Por otro lado, se pueden ver componentes con valores intermedios como "Carpeta", "Asistencia", "Usuario" o "Archivos enviados", que aunque no destacan tanto, sí tienen cierta presencia dentro del uso habitual de la plataforma. Finalmente, hay otros componentes con valores muy bajos, lo que indica que su uso es mucho más limitado o puntual.
 
@@ -79,6 +127,40 @@ La tabla permite ver de forma más detallada cómo se reparte la actividad entre
 
 
 **Fase 2**
+
+- PREGUNTA 1
+En cuanto a la actividad semanal: 
+¿Qué días de la semana se usa más el aula virtual y cuánto cae el uso el sábado y el domingo?
+
+Para poder responder correctamente la pregunta en relacion con la actividad semanal, mediante un ggplot, comprobaremos el apartado fecha de nuestro data frame para poder sacar conclusiones adecuadas.
+
+```{r figura-actividadsemanal, fig.cap="Actividad semanal en el aula virtual"}
+#primero cargamos las librerias que consideramos necesarias para poder crear una tabla que nos compare la actividad en el aula virtual cada dia
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+#la segunda parte es el procesamiento de los datos
+logs_semanal <- logs %>%
+  mutate(
+    #Como vemos en el df la columna hora lleva tanto la fecha como la hora, lo que queremso hacer con la funcion dmy_hms es convertir solo la fecha y eliminar la hora
+    Fecha_dt = dmy_hms(Hora),
+    # extraemos el día de la semana (lunes como día 1, martes como dia 2 y asi hasta el domingo)
+    Dia_Semana = wday(Fecha_dt, label = TRUE, abbr = FALSE, week_start = 1)
+  ) %>%
+  # Contamos cuántos eventos hay por día para poder crear las columnas de la grafica
+  group_by(Dia_Semana) %>%
+  summarise(Total_Eventos = n())
+
+#La ultima parte ya es crear la grafica con los datos obtenidos
+ggplot(logs_semanal, aes(x = Dia_Semana, y = Total_Eventos, fill = Dia_Semana)) + geom_col(show.legend = FALSE) + scale_fill_manual(values = c("lightblue","lightyellow","lavender","aliceblue","pink","lightcyan","powderblue")) + labs(title = "Actividad semanal en el aula virtual", subtitle = "Comparación de los dias respecto a la actividad en el aula virtual", x = "Dia de la semana", y = "Numero de registros") +   theme_minimal() 
+
+```
+Mirando la grafica \@ref(fig:figura-actividadsemanal) podemos observar la distribucion de la actividad durante la semana. Podemos ver, que, evidentemente, los dias de la semana con mas peso son los dias lectivos, lo que sugiere que los usuarios acceden con mayor frecuencia entre semana para la consulta de materiales para poder realizar tanto sus practicas como sus actividades en las horas lectivas. Observamos, que entre los dias de mas frecuencia, que son los lunes, martes, miercoles, jueves y viernes, hay dias mas frecuentados que otros. Por ejemplo el lunes es el dia que menos se consulta, no como el miercoles que es el que mas. 
+
+Respecto al fin de semana, se nota una caida significativa. Si comparamos un dia lectivo frente a un dia del fin de semana podemos observar que decae aproximadamente un 70%. El sabado se posiciona como el dia de minima interaccion con apenas 5.000 registros, muy pocos a comparacion de la media de entre semana que es de 20.000 registros. En cambio, el domingo, parece que la semana nueva se va acercando y sube un poco mas, con aproximadamente 7.000 registros. Con esto podemos comprobar que los usuarios priorizan los tiempos de descanso durante los dias no lectivos.
+
+En conclusion, podemos decir que el comportamiento de los usuarios es ciclico, es decir, existe una curva que empieza fuerte el lunes pero que decae cuando llega el fin de semana, siendo el sabado el dia de menor interaccion.
 
 
 - PREGUNTA 4
@@ -104,3 +186,46 @@ ggplot(logs_sistema, aes(x = Dif_Minutos)) +
        y = "Frecuencia")
 ```
 Según el gráfico  \@ref(fig:fig-comportamiento), el comportamiento predominante en el componente 'Sistema' es el de 'entrar y salir' (consultas rápidas), ya que el histograma tiene concentracion de frecuencias en el intervalo de 0 a 1 minuto, por lo que la mayoria de interacciones son cortos minutos de actividad. La distribución está sesgada a la derecga, donde la frecuencia es mucho menor después de los primeros dos minutos, por lo que no hay una navegación duradera, sino que los usuarios acceden para hacer acciones breves. 
+
+
+
+- PREGUNTA 5
+¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
+
+Para resolver esta pregunta, realizaremos tanto un grafico pie como una tabla, para que los porcentajes queden mas claros y poder responder mas claramente a la pregunta
+
+
+```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos"}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+#primero agrupamos los registros pasivos y los registros activos
+logs_interaccion <- logs %>% mutate(Tipo_Accion = ifelse(grepl("visto|visualizado|viewed", `Nombre.evento`, ignore.case = TRUE),"Lectura", "Acción"))
+
+tabla_perfiles <- logs_interaccion %>% count(Tipo_Accion) %>% mutate(Porcentaje = round(n / sum(n) * 100, 1))
+
+#luego creamos nuestro grafico 
+ggplot(tabla_perfiles, aes(x = "", y = n, fill = Tipo_Accion)) + geom_bar(stat = "identity", width = 1, color = "white") + coord_polar("y", start = 0) + scale_fill_manual(values = c( "Lectura" = "lightcyan","Acción" = "powderblue")) + theme_void() +labs(title = "¿Lectores o Participantes?", subtitle = "porcentaje de lectura vs accion ", fill = "Participante")
+```
+
+```{r tabla-lectores-participantes}
+
+library(knitr)
+
+tabla_perfiles <- logs_interaccion %>% count(Tipo_Accion) %>% mutate(Porcentaje = round(n / sum(n) * 100, 1))
+
+knitr::kable(tabla_perfiles, caption = "Comparacion entre la interaccion pasiva y activa", booktabs = TRUE, col.names = c("Tipo de Interacción", "numero de interacciones", "Porcentaje"), align = "lcc") 
+```
+Para poder profundizar en el comportamiento de los usuarios una vez entran en el aula virtual, hemos usado la figura \@ref(fig:accion-lectura) para comprobar la proporcion entre el consumo de contenidos y la participacion directa mediante subida de tareas o realizacion de cuestionarios.  
+Esto lo hemos decidido encasillar en dos grandes grupos, en accion donde se almacenan la entrega de tareas, cuestionarios y foros y en lectura, donde se almacenan las consultas de materiales, la lectura de avisos y la visualizacion de recursos.
+
+Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura domina sin duda la mayor parte de los registros, este dato nos hace comprobar que el aula virtual se usa mayoritariamente para la consulta de tareas y como un centro de estudio previo. 
+La accion representa, como veemos en la tabla \@ref(tab:tabla-lectores-participantes) un porcentaje bastante menor. Esto no indica falta de interes, sino que el usuario necesita interactuar mas veces con el material y hacer una visualizacion de este para poder realizar la tarea que posteriormente hay que entregar.
+
+En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una biblioteca. Entramos mucho para consultar apuntes o avisos, pero una sola vez para entregar la tarea, lo que nos hace comprender que eso es un comportamiento muy normal y que realizamos mucho estudio y un clic final para el envio.
+
+
+
+
+

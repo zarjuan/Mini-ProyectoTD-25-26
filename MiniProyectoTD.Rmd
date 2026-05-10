@@ -30,19 +30,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introducción
 
-En este trabajo tenemos como objetivo realizar un analisis sobre la interaccion de los usuarios con el aula virtual. Para ello, partimos de una base de datos la cual usaremos para extraer las conclusiones necesarias y responder a las preguntas propuestas.
+Introducción
 
-Preguntas:
+En este trabajo, se realiza un Análisis Exploratorio de Datos (EDA) usando un conjunto de registros de actividad de la plataforma educativa Aula Virtual. Este tipo de datos recoge información detallada sobre las acciones que llevan a cabo los usuarios en el entorno virtual, permitiendo analizar su comportamiento y el uso de los recursos disponibles.
 
-En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el aula virtual y cuánto cae el uso el sábado y el domingo?
+El dataset contiene registros anonimizados con variables como la fecha y hora de la acción, el identificador del usuario, el contexto del evento (curso, tarea, cuestionario, etc.), el componente al que pertenece la acción, el tipo de evento realizado, una breve descripción de la actividad, y datos técnicos adicionales como el origen del acceso y la dirección IP. Estos datos permiten estudiar la interacción de los usuarios con el contenido académico y los patrones de navegación en la plataforma.
 
-En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas), ¿quién interactúa más con esa sección proporcionalmente a su grupo?
+El objetivo principal de este trabajo es explorar las características del conjunto de datos, identificar patrones de comportamiento y analizar la frecuencia y tipo de eventos registrados. Para ello, se lleva a cabo un proceso que incluye cargar y preprocesar los datos, revisar posibles valores perdidos o inconsistencias, y después aplicar técnicas de análisis univariante y multivariante mediante herramientas estadísticas y visualizaciones.
 
-En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
+A través de este análisis, se busca obtener una visión general sobre el uso de Moodle, además de detectar posibles tendencias en el acceso a contenidos, la realización de actividades o la interacción con diversos recursos educativos. Este tipo de estudio puede ser útil para entender mejor el comportamiento de los usuarios y contribuir a la mejora de los entornos virtuales de aprendizaje.
 
-En cuanto a deducción de perfiles: Cuando vemos mucha actividad en "Tareas", ¿podemos saber cuántos son profesores solo por cómo se mueven por el resto de la web, o es imposible distinguirlos de los alumnos?
+Para orientar el análisis y extraer información relevante, se han planteado una serie de preguntas iniciales que servirán como guía a lo largo del estudio. Estas cuestiones surgen de una primera exploración del dataset y buscan identificar patrones de comportamiento, relaciones entre variables y tendencias en el uso de la plataforma.
 
-¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
+Durante el trabajo, se intentará responder a cada una de estas preguntas mediante técnicas de análisis exploratorio, apoyándose en representaciones gráficas y herramientas estadísticas. Así, no solo se busca describir los datos, sino también interpretarlos y obtener conclusiones que añadan valor al análisis realizado. cual usaremos para extraer las conclusiones necesarias y responder a las preguntas propuestas.
 
 # Importación
 
@@ -244,6 +244,66 @@ Esto lo hemos decidido encasillar en dos grandes grupos, en accion donde se alma
 Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura domina sin duda la mayor parte de los registros, este dato nos hace comprobar que el aula virtual se usa mayoritariamente para la consulta de tareas y como un centro de estudio previo. La accion representa, como veemos en la tabla \@ref(tab:tabla-lectores-participantes) un porcentaje bastante menor. Esto no indica falta de interes, sino que el usuario necesita interactuar mas veces con el material y hacer una visualizacion de este para poder realizar la tarea que posteriormente hay que entregar.
 
 En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una biblioteca. Entramos mucho para consultar apuntes o avisos, pero una sola vez para entregar la tarea, lo que nos hace comprender que eso es un comportamiento muy normal y que realizamos mucho estudio y un clic final para el envio.
+
+## PREGUNTA 6
+
+¿Existen usuarios con comportamientos atípicos en la plataforma?ç
+
+Para resolver esta cuestión, se utlizará un boxplot para ver loscomportamientos atípicos(outliers) que serán los valores que estén fuera de la caja del boxplot.
+
+```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual"}
+
+library(ggplot2)
+library(dplyr)
+
+# Contamos el número de eventos realizados por cada usuario
+eventos_usuario <- logs %>%
+  count(Nombre.completo.del.usuario, name = "numero_eventos")
+
+# Creamos el boxplot
+ggplot(eventos_usuario, aes(x = "Usuarios", y = numero_eventos)) +
+  geom_boxplot(fill = "turquoise") +
+  labs(
+    title = "Distribución de eventos por usuario",
+    x = "",
+    y = "Número total de eventos"
+  ) +
+  theme_minimal()
+
+```
+
+En la Figura @ref(fig:fig-usuarios-outliers) se muestra la distribución del número total de eventos registrados por usuario . A partir de este gráfico se puede observar que la mayoría de usuarios presentan un nivel de actividad relativamente bajo y concentrado en un rango reducido.
+
+Sin embargo, también aparecen varios puntos por encima del límite superior del boxplot, lo que indica la presencia de usuarios con un número de eventos significativamente mayor que el resto. Estos valores pueden considerarse atípicos dentro del conjunto de datos.
+
+Lejos de tratarse de errores, estos comportamientos pueden corresponder a usuarios especialmente activos dentro de la plataforma, lo que permite identificar diferencias claras en los niveles de uso. Por tanto, se puede concluir que sí existen usuarios cuyo comportamiento se aleja del patrón general.
+
+A continuación, se llevará a cabo un análisis para identificar los usuarios con comportamientos atípicos en términos de interacción con la plataforma. Para ello, utilizaremos una tabla que permitirá visualizar las frecuencias de las interacciones de los usuarios con distintos componentes del aula virtual. Esta representación nos permitirá observar si existen usuarios que se desvían significativamente del comportamiento general en términos de cantidad de eventos registrados.
+
+```{r tabla-frecuencia-componentes}
+
+# Creamos una tabla con la frecuencia de cada componente
+df_frecuencia_componentes <- as.data.frame(table(logs$Componente))
+
+# Renombramos las columnas
+colnames(df_frecuencia_componentes) <- c("Componente", "Frecuencia")
+
+# Mostramos la tabla
+knitr::kable(
+  df_frecuencia_componentes,
+  caption = "Frecuencia de uso por componentes del aula virtual",
+  booktabs = TRUE
+)
+
+```
+
+En la Tabla @ref(tabla-frecuencia-componentes) se presenta la frecuencia de uso de los distintos componentes del aula virtual en Moodle. Este análisis nos permite identificar no solo los recursos más utilizados, sino también aquellos que muestran patrones de uso menos comunes, lo que nos ayuda a detectar comportamientos atípicos.
+
+Como era de esperar, el componente Tarea es el más utilizado, con un total de 27,983 registros. Esto sugiere que las tareas son el principal recurso de interacción dentro de la plataforma, lo cual es consistente con el objetivo académico de la plataforma Moodle. Sin embargo, los usuarios que interactúan principalmente con este componente podrían estar mostrando un comportamiento más intensivo o repetido, lo que podría considerarse un comportamiento atípico en comparación con el uso general.
+
+Por otro lado, componentes como Participación en el curso (con solo 1 registro) o Hoja de cálculo Excel (solo 5 registros) presentan frecuencias extremadamente bajas. Estos componentes, aunque útiles, parecen estar siendo prácticamente ignorados por la mayoría de los usuarios. Este comportamiento puede reflejar una falta de interés, accesibilidad limitada, o que estos componentes no son relevantes para el tipo de actividad que se desarrolla en la plataforma.
+
+La identificación de estos comportamientos atípicos es importante, ya que puede indicarnos áreas en las que los recursos de la plataforma no están siendo aprovechados adecuadamente, o incluso señalar que algunos usuarios tienen un nivel de interacción significativamente más alto o bajo que el resto, lo que puede ayudar a mejorar la distribución y accesibilidad de los componentes.
 
 ## PREGUNTA 7
 

@@ -406,17 +406,17 @@ administradores <- logs %>%
   mutate(rol = "Administrador")
 
 # Usuarios con más de un rol
-conflictos_roles <- roles_todos %>%
+conflictos <- roles_todos %>%
   group_by(Nombre.completo.del.usuario) %>%
   summarise(roles = paste(sort(unique(rol)), collapse = " + "),
             n_roles = n_distinct(rol)) %>%
   filter(n_roles > 1) %>%
   arrange(desc(n_roles))
 
-print(conflictos_roles)
+print(conflictos)
 ```
 
-Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando
+Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando ***(Ya no falla, pero igual estos dos usuarios son muy interesantes)***
 
 head(tabla_conflictos)
 

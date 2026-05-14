@@ -7,16 +7,16 @@ author:
 date: "`r Sys.Date()`"
 subtitle: "Tratamiento de los Datos. Grado en Ciencia de Datos- UV"
 output:
-  bookdown::pdf_document2:
-    toc: true
-    toc_depth: 3
-    number_sections: true
-    lang: spanish
   bookdown::html_document2:
     toc: true
     number_sections: true
     theme: spacelab
     lang: es
+  bookdown::pdf_document2:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    lang: spanish
 always_allow_html: true
 babel-lang: spanish
 babel-otherlangs: english
@@ -334,16 +334,127 @@ Como conclusión, los datos reflejan que el aula virtual funciona esencialmente 
 
 ## PREGUNTA 9
 
-¿A qué hora del día se entra más al aula virtual según el día de la semana?
+*¿A qué hora del día se entra más al aula virtual según el día de la semana?*
 
 ## PREGUNTA 10
 
-¿Cómo ha evolucionado la actividad a lo largo del curso? ¿Se dispara antes de las entregas o exámenes?
+*¿Cómo ha evolucionado la actividad a lo largo del curso? ¿Se dispara en entregas o épocas de exámenes?*
 
 ## PREGUNTA 11
 
-¿Cuántos usuarios distintos, de los inscritos en la asignatura, han registrado asistencia y con qué regularidad lo hacen?
+*¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
+
+Antes de comenzar, diferenciaremos entre **alumnos** y el resto para poder responder mejor a nuestras preguntas. Encontramos 3 posibles roles, *alumno*, *profesor* y *administrador*. Para diferenciarlos, seguiremos los siguientes critérios:
+
+-   **Alumno**
+
+    -   Ha firmado asistencia `Asistencia confirmada por el alumno`
+
+    -   Ha enviado una entrega `Se ha enviado una entrega`
+
+    -   Ha intentado un cuestionario `Intento de cuestionario actualizado`
+
+    -   Ha sido calificado. Dentro de `Usuario afectado`, cuando se hace `Usuario Calificado`
+
+-   **Profesor**
+
+    -   Ha creado preguntas de cuestionario `Pregunta creada`
+
+    -   Ha actualizado o borrado calificaciones `Elemento de calificación actualizado`, `Calificación borrada`
+
+    -   Ha gestionado sesiones de asistencia `Sesión añadida` , `Sesión actualizada`, `Sesión eliminada`
+
+    -   Ha actualizado el calendario del curso `Evento de calendario actualizado`
+
+    -   Es quien aparece calificando a otros, Dentro de `Nombre completo del usuario` , cuando hay `Usuario calificado`
+
+-   **Administrador**
+
+    -   Ha matriculado usuarios `Usuario matriculado en el curso`
+
+    -   Ha asignado roles `Rol asignado`
+
+    -   Ha creado secciones del curso `Sección del curso creada`
+
+Dado que no podemos confirmar con total certeza que los eventos registrados corresponden exclusivamente a un único tipo de usuario, vamos a clasificar a todos los usuarios según los tres roles posibles: alumno, profesor y administrador. A continuación, comprobaremos si algún usuario queda clasificado en más de un rol simultáneamente, lo que nos permitirá detectar criterios de clasificación poco fiables o contradictorios.
+
+```{r,establecer roles}
+library(dplyr)
+
+# Criterios por rol
+alumnos <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Asistencia confirmada por el alumno",
+    "Se ha enviado una entrega",
+    "Intento de cuestionario actualizado"
+  )) %>%
+  distinct(Nombre.completo.del.usuario) %>%
+  mutate(rol = "Alumno")
+
+profesores <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Pregunta creada",
+    "Elemento de calificación actualizado",
+    "Calificación borrada",
+    "Sesión añadida",
+    "Sesión actualizada",
+    "Sesión eliminada",
+    "Evento de calendario actualizado"
+  )) %>%
+  distinct(Nombre.completo.del.usuario) %>%
+  mutate(rol = "Profesor")
+
+administradores <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Usuario matriculado en el curso",
+    "Rol asignado",
+    "Sección del curso creada"
+  )) %>%
+  distinct(Nombre.completo.del.usuario) %>%
+  mutate(rol = "Administrador")
+
+# Unimos todo
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+
+# Usuarios con más de un rol
+conflictos_roles <- roles_todos %>%
+  group_by(Nombre.completo.del.usuario) %>%
+  summarise(roles = paste(sort(unique(rol)), collapse = " + "),
+            n_roles = n_distinct(rol)) %>%
+  filter(n_roles > 1) %>%
+  arrange(desc(n_roles))
+
+print(conflictos_roles)
+```
+
+Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando
+
+```{r}
+conflictivos <- c("U0072", "U0095")
+
+tabla_conflictos <- logs %>%
+  filter(Nombre.completo.del.usuario %in% conflictivos,
+         Nombre.evento %in% c(
+           # criterios alumno
+           "Asistencia confirmada por el alumno",
+           "Se ha enviado una entrega",
+           "Intento de cuestionario actualizado",
+           # criterios profesor
+           "Pregunta creada",
+           "Elemento de calificación actualizado",
+           "Calificación borrada",
+           "Sesión añadida", "Sesión actualizada", "Sesión eliminada",
+           "Evento de calendario actualizado",
+           # criterios administrador
+           "Usuario matriculado en el curso",
+           "Rol asignado",
+           "Sección del curso creada"
+         )) %>%
+  count(Nombre.completo.del.usuario, Nombre.evento) %>%
+  arrange(Nombre.completo.del.usuario, desc(n))
+
+```
 
 ## PREGUNTA 12
 
-¿Cual es la diferencia de actividad entre las personas que firman asistencia, en contra de las que no?
+*¿Cual es la diferencia de actividad entre las personas que firman asistencia, en contra de las que no?¿Los que no asisten también entregan menos tareas?*

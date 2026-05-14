@@ -686,6 +686,78 @@ En conclusión, sí es posible clasificar a los alumnos por su nivel de asistenc
 
 *¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
 
-```{r}
+```{r, tareas-segun-asistencia}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+
+# Contamos las entregas de tareas por alumno
+entregas <- logs %>%
+  filter(Nombre.evento == "Se ha enviado una entrega") %>%
+  count(Nombre.completo.del.usuario, name = "Tareas_Entregadas")
+
+# Unimos con la tabla de asistencia
+asistencia_entregas <- asistencia_alumno %>%
+  left_join(entregas, by = "Nombre.completo.del.usuario") %>%
+  mutate(Tareas_Entregadas = replace_na(Tareas_Entregadas, 0))
+
+# Resumen por nivel de asistencia
+resumen <- asistencia_entregas %>%
+  group_by(Nivel) %>%
+  summarise(
+    Num_Alumnos = n(),
+    Media_Tareas = round(mean(Tareas_Entregadas), 2),
+    Mediana_Tareas = median(Tareas_Entregadas),
+    Max_Tareas = max(Tareas_Entregadas),
+    Total_Entregas = sum(Tareas_Entregadas),
+    .groups = "drop"
+  )
+
+print(resumen)
+
+# Gráfico principa
+ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel)) +
+  geom_boxplot(alpha = 0.8, outlier.shape = 16, outlier.size = 2) +
+  geom_jitter(width = 0.2, alpha = 0.3, size = 1.5) +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title = "Entrega de tareas según nivel de asistencia",
+    subtitle = "Boxplot + puntos individuales",
+    x = "Nivel de asistencia",
+    y = "Número de tareas entregadas"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+
+# Gráfico de barras
+ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +
+  geom_col(width = 0.7, alpha = 0.9) +
+  geom_text(aes(label = Media_Tareas), vjust = -0.4, size = 4.5, fontface = "bold") +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title = "Promedio de tareas entregadas por nivel de asistencia",
+    x = "Nivel de asistencia",
+    y = "Media de tareas entregadas"
+  ) +
+  theme_minimal()
 
 ```
+
+En la figura anterior se observa una clara relación positiva entre el nivel de asistencia y el número de tareas entregadas.
+
+Los alumnos con **asistencia alta (≥75%)** son los que más tareas entregan, con una media de aproximadamente X tareas por alumno. Por el contrario, los alumnos con **asistencia muy baja (\<25%)** presentan una media notablemente inferior (cerca de Y tareas), y un mayor número de alumnos que no entregan prácticamente ninguna tarea. Pero este grupo es el que más variedad posee, en cambio el de **asistencia alta (≥75%)** es mucho menos variable, es más normal entregarlo todo.
+
+Esto confirma que los alumnos que no asisten regularmente también tienden a entregar menos tareas, lo que sugiere una correlación entre el compromiso con la asignatura (medido por la asistencia) y el rendimiento en las actividades evaluables.
+
+**Conclusión**: Sí existe una relación clara. Los alumnos con baja asistencia son también los menos activos en la entrega de tareas.

@@ -405,6 +405,8 @@ administradores <- logs %>%
   distinct(Nombre.completo.del.usuario) %>%
   mutate(rol = "Administrador")
 
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+
 # Usuarios con más de un rol
 conflictos <- roles_todos %>%
   group_by(Nombre.completo.del.usuario) %>%
@@ -416,7 +418,7 @@ conflictos <- roles_todos %>%
 print(conflictos)
 ```
 
-Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando ***(Ya no falla, pero igual estos dos usuarios son muy interesantes)***
+Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando
 
 head(tabla_conflictos)
 

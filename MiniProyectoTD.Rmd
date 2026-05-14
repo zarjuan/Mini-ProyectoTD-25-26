@@ -471,6 +471,7 @@ roles_todos <- bind_rows(alumnos, profesores, administradores)
 
 roles_todos
 ```
+
 Aquí se queda fuera muchos usuarios, dado a que solo tienen la actividad de `Usuario calificado`, o demasiada poca actividad como para ser relevante. Hay varios que se han quedado fuera que es probable que sean observadores.
 
 Es muy probable que `U0001` sea un bot, porque `Usuario calificado` es la única cosa que hace, lo que encajaría bastante con poner notas automáticas etc.
@@ -489,16 +490,202 @@ ggplot(roles_todos, aes(x = rol, fill = rol)) +
   theme_minimal()
 
 ```
+
 En respuesta a la pregunta inicial, es complicado distinguir entre profesores, alumnos y administradores. Pero acotandose a unos criterios se puede trabajar un poco con esos datos, como las preguntas que se van a realizar a continuación.
 
 ## PREGUNTA 10
 
-*¿A qué hora del día se entra más al aula virtual los alumnos y los profesores según el día de la semana?*
+*¿A qué hora del día se entra más al aula virtual los **alumnos** y los **profesores** según el día de la semana?*
 
-##PREGUNTA 11
+Para resolver esta cuestión se va a realizar utilizaremos **dos mapas de calor**. *¿Por qué un heatmap?* La pregunta tiene dos dimensiones simultáneas (hora del día × día de la semana) más la separación por rol. Un `heatmap` con `facet_wrap` permite ver de un vistazo en qué celdas se concentra la actividad, algo que sería muy difícil de leer con barras agrupadas.
+
+```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual"}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+
+# Preprocesamos usando los df de los roles
+logs_hora <- logs %>%
+  mutate(
+    Hora_dt    = dmy_hms(Hora),
+    Hora_dia   = hour(Hora_dt),
+    Dia_Semana = wday(Hora_dt, label = TRUE, abbr = FALSE, week_start = 1)
+  ) %>%
+  # Filtramos para asegurar que solo procesamos usuarios conocidos
+  filter(
+    Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario |
+    Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario
+  ) %>%
+  # Asignamos Rol según su pertenencia a los DF de la Pregunta 9
+  mutate(
+    Rol = case_when(
+      Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario    ~ "Alumnado",
+      Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario ~ "Profesorado"
+    )
+  )
+
+# Agrupar
+logs_heatmap <- logs_hora %>%
+  group_by(Rol, Dia_Semana, Hora_dia) %>%
+  summarise(Total = n(), .groups = "drop")
+
+# Hacer mapa de calor
+hacer_heatmap_limpio <- function(datos, rol, color_bajo, color_alto) {
+  ggplot(datos %>% filter(Rol == rol), 
+         aes(x = Dia_Semana, y = Hora_dia, fill = Total)) +
+    geom_tile(color = "white", linewidth = 0.1) +
+    # Usamos gradiente lineal para que sea más suave y fácil de leer
+    scale_fill_gradient(low = color_bajo, high = color_alto, 
+                        name = "Nº eventos") +
+    scale_y_continuous(breaks = 0:23, labels = paste0(0:23, "h")) +
+    labs(
+      title = paste("Actividad por hora y día —", rol),
+      x     = "Día de la semana",
+      y     = "Hora del día"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 10),  # texto días
+      axis.text.y = element_text(size = 9),                         # ← texto horas
+      axis.title.y = element_text(size = 11, margin = margin(r = 8)), # opcional
+      axis.title.x = element_text(size = 11))
+}
+
+# Generar Gráficos
+# Alumnado
+hacer_heatmap_limpio(logs_heatmap, "Alumnado", "#f7fbff", "steelblue")
+
+# Profesorado
+hacer_heatmap_limpio(logs_heatmap, "Profesorado", "#fff5eb", "darkorange")
+```
+
+El heatmap muestra claramente que la actividad del **alumnado** se concentra en la franja horaria de **9h a 14h** durante los días lectivos (lunes a viernes), con un segundo pico muy moderado entre las **16h y las 20h**. Esto coincide con los horarios de clase presencial y con las horas de estudio vespertino habituales. Durante el fin de semana, la actividad cae notablemente, aunque el domingo presenta un repunte puntual por la tarde, probablemente asociado a la entrega de tareas de inicio de semana. Menos en la mañana del domingo que hay poca actividad. Además cabe destacar, que a diferencia de los **profesores**, hay actividad durante las 24h del día, indicando que, aunque pocos, hay actividad incluso en la madruda.
+
+El **profesorado**, por su parte, muestra una distribución menos dispersa a lo largo del día y con una intensidad global mucho menor (en parte porque son menos usuarios). Su actividad tiende a concentrarse en **horario de mañana entre semana**, coincidiendo con la jornada laboral, y prácticamente desaparece los fines de semana. También hay un segundo pico muy moderado **por la tarde**. Es muy sorprendente que a diferencia de los **alumnos**, no hay actividad registrada en horas de sueño.
+
+Igualmente, se sigue reflejando la mayor actividad los **miércoles** y los **viernes** lo cual se indicaba en una figura anterior \@ref(fig:fig2) para los alumnos. Casualmente, el día de antes los profesores tienes más actividad.
+
+En conclusión, ambos grupos siguen un patrón marcadamente laboral/académico: el uso del aula virtual sigue los ritmos del horario escolar y las franjas horarias diurnas en el caso de los profesores, siendo el alumnado quien genera la mayor parte del tráfico, especialmente en las horas de tarde-noche
+
+## PREGUNTA 11
 
 *¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
 
+Primero vamos a filtrar la información para poder hacer los gráficos. Así como calcular todas las sesiones realizadas para poder hacer un porcentaje de asistencias. Según este porcentaje
+
+```{r, asistencias}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+
+#Identificamos alumnos
+alumnos <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Asistencia confirmada por el alumno",
+    "Se ha enviado una entrega",
+    "Intento de cuestionario actualizado"
+  )) %>%
+  distinct(Nombre.completo.del.usuario)
+
+# Filtramos firmas de asistencia solo de alumnos
+asistencia <- logs %>%
+  filter(
+    Componente == "Asistencia",
+    Nombre.evento == "Asistencia confirmada por el alumno",
+    Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario
+  ) %>%
+  mutate(Fecha = as.Date(dmy_hms(Hora)))
+
+#Total de sesiones únicas del curso
+total_sesiones <- asistencia %>%
+  distinct(Fecha) %>%
+  nrow()
+# 22 sesiones
+
+# Asistencias por alumno y porcentaje
+# Incluimos también alumnos que nunca firmaron (0 asistencias)
+asistencia_alumno <- alumnos %>%
+  left_join(
+    asistencia %>%
+      group_by(Nombre.completo.del.usuario) %>%
+      summarise(Sesiones_Asistidas = n_distinct(Fecha), .groups = "drop"),
+    by = "Nombre.completo.del.usuario"
+  ) %>%
+  mutate(
+    Sesiones_Asistidas = replace_na(Sesiones_Asistidas, 0),
+    Pct_Asistencia     = round(Sesiones_Asistidas / total_sesiones * 100, 1)
+  )
+
+# Clasificación por nivel
+asistencia_alumno <- asistencia_alumno %>%
+  mutate(
+    Nivel = case_when(
+      Pct_Asistencia >= 75 ~ "Alta (≥75%)",
+      Pct_Asistencia >= 50 ~ "Media (50–74%)",
+      Pct_Asistencia >= 25 ~ "Baja (25–49%)",
+      TRUE                 ~ "Muy baja (<25%)"
+    ),
+    Nivel = factor(Nivel, levels = c("Alta (≥75%)", "Media (50–74%)",
+                                     "Baja (25–49%)", "Muy baja (<25%)"))
+  )
+```
+
+Ahora que tenemos todo listo, vamos a hacer las tablas:
+
+```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual"}
+ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
+  geom_histogram(binwidth = 5, color = "white") +
+  geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",
+             color = "grey40", linewidth = 0.7) +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title    = "Distribución de la asistencia online del alumnado",
+    subtitle = paste("Total de sesiones del curso:", total_sesiones),
+    x        = "% de sesiones firmadas",
+    y        = "Número de alumnos",
+    fill     = "Nivel de asistencia"
+  ) +
+  theme_minimal()
+```
+
+```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia"}
+resumen_niveles <- asistencia_alumno %>% count(Nivel)
+
+ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +
+  geom_col(show.legend = FALSE, width = 0.6) +
+  geom_text(aes(label = n), vjust = -0.4, size = 4) +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title = "Clasificación del alumnado por nivel de asistencia",
+    x     = "Nivel de asistencia",
+    y     = "Número de alumnos"
+  ) +
+  theme_minimal()
+```
+
+Para analizar la regularidad en la firma de asistencia online, se filtraron los eventos `"Asistencia confirmada por el alumno"` del componente `Asistencia`. Durante el curso se registraron **22 sesiones** únicas, y **71 alumnos** firmaron al menos una vez.
+
+El histograma muestra una distribución claramente **polarizada**: hay un grupo numeroso de alumnos con asistencia muy alta (por encima del 75%), pero también un grupo considerable con asistencia baja o muy baja, con pocos alumnos en la franja intermedia. Esto sugiere que no existe un comportamiento uniforme: los alumnos tienden a ser o muy regulares o muy irregulares, sin término medio.
+
+La clasificación por niveles confirma esta tendencia. El grupo de asistencia **Alta (≥75%)** es el más numeroso, lo que indica que la mayoría del alumnado sí firma de forma consistente. Sin embargo, el peso del grupo de asistencia **Muy baja (\<25%)** no es despreciable, e identifica a alumnos que prácticamente no participan en el control de asistencia online.
+
+En conclusión, sí es posible clasificar a los alumnos por su nivel de asistencia, y esta segmentación resulta útil para detectar perfiles de riesgo académico dentro del curso.
+
 ## PREGUNTA 12
 
-*¿Cual es la diferencia de actividad entre las personas que firman asistencia, en contra de las que no?¿Los que no asisten también entregan menos tareas?*
+*¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
+
+```{r}
+
+```

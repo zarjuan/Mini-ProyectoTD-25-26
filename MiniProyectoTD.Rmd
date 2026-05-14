@@ -247,7 +247,7 @@ En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una
 
 ## PREGUNTA 6
 
-¿Existen usuarios con comportamientos atípicos en la plataforma?ç
+¿Existen usuarios con comportamientos atípicos en la plataforma?
 
 Para resolver esta cuestión, se utlizará un boxplot para ver loscomportamientos atípicos(outliers) que serán los valores que estén fuera de la caja del boxplot.
 
@@ -331,3 +331,19 @@ Si analizamos la figura \@ref(fig:fig-comunicacion) que compara el uso de los di
 Al observar los datos cuantitativos, vemos que el componente "Carpeta" registra más de 3.000 interacciones, mientras que el "Foro" presenta una actividad mínima en comparación. Si establecemos una comparativa porcentual, el acceso a recursos supone prácticamente la totalidad de las acciones analizadas en esta categoría, dejando la comunicación en un segundo plano muy alejado. Esto confirma que la utilidad principal de la plataforma para los usuarios es la obtención de materiales para el estudio personal.
 
 Como conclusión, los datos reflejan que el aula virtual funciona esencialmente como un almacén de archivos. No existe un hábito de interaccion dentro del sistema, ya que los usuarios concentran sus esfuerzos en gestionar el contenido, ignorando las herramientas de comunicación disponibles.
+
+## PREGUNTA 9
+
+¿A qué hora del día se entra más al aula virtual según el día de la semana?
+
+## PREGUNTA 10
+
+¿Cómo ha evolucionado la actividad a lo largo del curso? ¿Se dispara antes de las entregas o exámenes?
+
+## PREGUNTA 11
+
+¿Cuántos usuarios distintos, de los inscritos en la asignatura, han registrado asistencia y con qué regularidad lo hacen?
+
+## PREGUNTA 12
+
+¿Cual es la diferencia de actividad entre las personas que firman asistencia, en contra de las que no?

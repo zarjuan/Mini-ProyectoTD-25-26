@@ -334,17 +334,9 @@ Como conclusión, los datos reflejan que el aula virtual funciona esencialmente 
 
 ## PREGUNTA 9
 
-*¿A qué hora del día se entra más al aula virtual según el día de la semana?*
+*¿Se puede diferenciar entre **alumnos**, **profesores** y **administradores**?*
 
-## PREGUNTA 10
-
-*¿Cómo ha evolucionado la actividad a lo largo del curso? ¿Se dispara en entregas o épocas de exámenes?*
-
-## PREGUNTA 11
-
-*¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
-
-Antes de comenzar, diferenciaremos entre **alumnos** y el resto para poder responder mejor a nuestras preguntas. Encontramos 3 posibles roles, *alumno*, *profesor* y *administrador*. Para diferenciarlos, seguiremos los siguientes critérios:
+Encontramos 3 posibles roles, *alumno*, *profesor* y *administrador*. Para diferenciarlos, seguiremos los siguientes critérios:
 
 -   **Alumno**
 
@@ -413,9 +405,6 @@ administradores <- logs %>%
   distinct(Nombre.completo.del.usuario) %>%
   mutate(rol = "Administrador")
 
-# Unimos todo
-roles_todos <- bind_rows(alumnos, profesores, administradores)
-
 # Usuarios con más de un rol
 conflictos_roles <- roles_todos %>%
   group_by(Nombre.completo.del.usuario) %>%
@@ -429,31 +418,86 @@ print(conflictos_roles)
 
 Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando
 
-```{r}
+head(tabla_conflictos)
+
+```{r conflictos_roles}
+
 conflictivos <- c("U0072", "U0095")
 
+# Tabla con nombres de columnas correctos
 tabla_conflictos <- logs %>%
-  filter(Nombre.completo.del.usuario %in% conflictivos,
-         Nombre.evento %in% c(
-           # criterios alumno
-           "Asistencia confirmada por el alumno",
-           "Se ha enviado una entrega",
-           "Intento de cuestionario actualizado",
-           # criterios profesor
-           "Pregunta creada",
-           "Elemento de calificación actualizado",
-           "Calificación borrada",
-           "Sesión añadida", "Sesión actualizada", "Sesión eliminada",
-           "Evento de calendario actualizado",
-           # criterios administrador
-           "Usuario matriculado en el curso",
-           "Rol asignado",
-           "Sección del curso creada"
-         )) %>%
+  filter(Nombre.completo.del.usuario %in% conflictivos) %>%
   count(Nombre.completo.del.usuario, Nombre.evento) %>%
-  arrange(Nombre.completo.del.usuario, desc(n))
+  arrange(Nombre.completo.del.usuario, desc(n)) %>%
+  rename(Usuario = Nombre.completo.del.usuario,
+         Evento = Nombre.evento,
+         Total = n) %>%
+  mutate(Evento = case_when(
+    Evento == "Asistencia confirmada por el alumno" ~ "Asistencia confirmada",
+    Evento == "Elemento de calificación actualizado" ~ "Elem. calif. actualizado",
+    Evento == "Usuario matriculado en el curso" ~ "Usuario matriculado",
+    Evento == "Evento de calendario actualizado" ~ "Evento calendario",
+    TRUE ~ Evento
+  ))
+
+# Mostrar tabla
+tabla_conflictos
+
+# Total actividades por usuario
+tabla_conflictos %>%
+  group_by(Usuario) %>%
+  summarise(total_actividades = sum(Total))
+
 
 ```
+
+Como se puede apreciar en la actividad de estos dos usuarios, que hacen más actividades de profesor que de otra cosa, sobretodo `U0072` el cual es bastante probable que sea el **profesor principal**, dado a que realiza una gran variedad de actividades, destacando las de profesor como crea preguntas, gestionar sesiones de asistencia, borrar calificaciones. Como tiene una gran variedad de actividades, es muy poco probable que sea un bot que ha realizado muchas actividades *(13079 registros)* siendo actividades de estudiante, de administrador y de profesor. Esto indica que es una pieza clave a la hora de gestionar el curso por eso es muy probable que sea el **profesor principal**
+
+En su cambio el `U0095` ha realizado muchas actividades menos *(2836)*. Aquí la duda estaba en si era **administrador o profesor**, ha realizado alguna actividad de administrador, pero no es lo principal. Principalmente ha realizado tareas de profesor, sobretodo relacionado con cuestionarios. Así sería bastante normal que fuera **otro profesor**, pero sin tanta importancia como el `U0072`
+
+Arreglamos los datos que tenemos
+
+```{r, arreglar los listas de roles}
+administradores <- administradores[administradores$Nombre.completo.del.usuario != "U0072",]
+administradores <- administradores[administradores$Nombre.completo.del.usuario != "U0095",]
+alumnos <- alumnos[alumnos$Nombre.completo.del.usuario != "U0072",]
+```
+
+Ahora sí que sí, que ya no hay casos raros podemos analizar los datos que hemos obtenido
+
+```{r}
+# Unimos todo
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+
+roles_todos
+```
+Aquí se queda fuera muchos usuarios, dado a que solo tienen la actividad de `Usuario calificado`, o demasiada poca actividad como para ser relevante. Hay varios que se han quedado fuera que es probable que sean observadores.
+
+Es muy probable que `U0001` sea un bot, porque `Usuario calificado` es la única cosa que hace, lo que encajaría bastante con poner notas automáticas etc.
+
+Otro caso especial es `U0002`, que es administrador, dado a que creó el curso. Y cuadra con lo anterior, tiene sentido que el primer usuario sea el bot, y el segundo quien creo y designo roles en el curso
+
+```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol"}
+
+ggplot(roles_todos, aes(x = rol, fill = rol)) +
+  geom_bar() +
+  labs(
+    title = "Número de usuarios por rol",
+    x = "Rol",
+    y = "Nº de usuarios"
+  ) +
+  theme_minimal()
+
+```
+En respuesta a la pregunta inicial, es complicado distinguir entre profesores, alumnos y administradores. Pero acotandose a unos criterios se puede trabajar un poco con esos datos, como las preguntas que se van a realizar a continuación.
+
+## PREGUNTA 10
+
+*¿A qué hora del día se entra más al aula virtual los alumnos y los profesores según el día de la semana?*
+
+##PREGUNTA 11
+
+*¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
 
 ## PREGUNTA 12
 

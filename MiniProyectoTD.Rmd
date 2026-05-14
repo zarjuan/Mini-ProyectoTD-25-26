@@ -7,16 +7,16 @@ author:
 date: "`r Sys.Date()`"
 subtitle: "Tratamiento de los Datos. Grado en Ciencia de Datos- UV"
 output:
-  bookdown::pdf_document2:
-    toc: true
-    toc_depth: 3
-    number_sections: true
-    lang: spanish
   bookdown::html_document2:
     toc: true
     number_sections: true
     theme: spacelab
     lang: es
+  bookdown::pdf_document2:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    lang: spanish
 always_allow_html: true
 babel-lang: spanish
 babel-otherlangs: english
@@ -247,7 +247,7 @@ En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una
 
 ## PREGUNTA 6
 
-¿Existen usuarios con comportamientos atípicos en la plataforma?ç
+¿Existen usuarios con comportamientos atípicos en la plataforma?
 
 Para resolver esta cuestión, se utlizará un boxplot para ver loscomportamientos atípicos(outliers) que serán los valores que estén fuera de la caja del boxplot.
 
@@ -331,3 +331,433 @@ Si analizamos la figura \@ref(fig:fig-comunicacion) que compara el uso de los di
 Al observar los datos cuantitativos, vemos que el componente "Carpeta" registra más de 3.000 interacciones, mientras que el "Foro" presenta una actividad mínima en comparación. Si establecemos una comparativa porcentual, el acceso a recursos supone prácticamente la totalidad de las acciones analizadas en esta categoría, dejando la comunicación en un segundo plano muy alejado. Esto confirma que la utilidad principal de la plataforma para los usuarios es la obtención de materiales para el estudio personal.
 
 Como conclusión, los datos reflejan que el aula virtual funciona esencialmente como un almacén de archivos. No existe un hábito de interaccion dentro del sistema, ya que los usuarios concentran sus esfuerzos en gestionar el contenido, ignorando las herramientas de comunicación disponibles.
+
+## PREGUNTA 9
+
+*¿Se puede diferenciar entre **alumnos**, **profesores** y **administradores**?*
+
+Encontramos 3 posibles roles, *alumno*, *profesor* y *administrador*. Para diferenciarlos, seguiremos los siguientes critérios:
+
+-   **Alumno**
+
+    -   Ha firmado asistencia `Asistencia confirmada por el alumno`
+
+    -   Ha enviado una entrega `Se ha enviado una entrega`
+
+    -   Ha intentado un cuestionario `Intento de cuestionario actualizado`
+
+    -   Ha sido calificado. Dentro de `Usuario afectado`, cuando se hace `Usuario Calificado`
+
+-   **Profesor**
+
+    -   Ha creado preguntas de cuestionario `Pregunta creada`
+
+    -   Ha actualizado o borrado calificaciones `Elemento de calificación actualizado`, `Calificación borrada`
+
+    -   Ha gestionado sesiones de asistencia `Sesión añadida` , `Sesión actualizada`, `Sesión eliminada`
+
+    -   Ha actualizado el calendario del curso `Evento de calendario actualizado`
+
+    -   Es quien aparece calificando a otros, Dentro de `Nombre completo del usuario` , cuando hay `Usuario calificado`
+
+-   **Administrador**
+
+    -   Ha matriculado usuarios `Usuario matriculado en el curso`
+
+    -   Ha asignado roles `Rol asignado`
+
+    -   Ha creado secciones del curso `Sección del curso creada`
+
+Dado que no podemos confirmar con total certeza que los eventos registrados corresponden exclusivamente a un único tipo de usuario, vamos a clasificar a todos los usuarios según los tres roles posibles: alumno, profesor y administrador. A continuación, comprobaremos si algún usuario queda clasificado en más de un rol simultáneamente, lo que nos permitirá detectar criterios de clasificación poco fiables o contradictorios.
+
+```{r,establecer roles}
+library(dplyr)
+
+# Criterios por rol
+alumnos <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Asistencia confirmada por el alumno",
+    "Se ha enviado una entrega",
+    "Intento de cuestionario actualizado"
+  )) %>%
+  distinct(Nombre.completo.del.usuario) %>%
+  mutate(rol = "Alumno")
+
+profesores <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Pregunta creada",
+    "Elemento de calificación actualizado",
+    "Calificación borrada",
+    "Sesión añadida",
+    "Sesión actualizada",
+    "Sesión eliminada",
+    "Evento de calendario actualizado"
+  )) %>%
+  distinct(Nombre.completo.del.usuario) %>%
+  mutate(rol = "Profesor")
+
+administradores <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Usuario matriculado en el curso",
+    "Rol asignado",
+    "Sección del curso creada"
+  )) %>%
+  distinct(Nombre.completo.del.usuario) %>%
+  mutate(rol = "Administrador")
+
+# Usuarios con más de un rol
+conflictos_roles <- roles_todos %>%
+  group_by(Nombre.completo.del.usuario) %>%
+  summarise(roles = paste(sort(unique(rol)), collapse = " + "),
+            n_roles = n_distinct(rol)) %>%
+  filter(n_roles > 1) %>%
+  arrange(desc(n_roles))
+
+print(conflictos_roles)
+```
+
+Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando
+
+head(tabla_conflictos)
+
+```{r conflictos_roles}
+
+conflictivos <- c("U0072", "U0095")
+
+# Tabla con nombres de columnas correctos
+tabla_conflictos <- logs %>%
+  filter(Nombre.completo.del.usuario %in% conflictivos) %>%
+  count(Nombre.completo.del.usuario, Nombre.evento) %>%
+  arrange(Nombre.completo.del.usuario, desc(n)) %>%
+  rename(Usuario = Nombre.completo.del.usuario,
+         Evento = Nombre.evento,
+         Total = n) %>%
+  mutate(Evento = case_when(
+    Evento == "Asistencia confirmada por el alumno" ~ "Asistencia confirmada",
+    Evento == "Elemento de calificación actualizado" ~ "Elem. calif. actualizado",
+    Evento == "Usuario matriculado en el curso" ~ "Usuario matriculado",
+    Evento == "Evento de calendario actualizado" ~ "Evento calendario",
+    TRUE ~ Evento
+  ))
+
+# Mostrar tabla
+tabla_conflictos
+
+# Total actividades por usuario
+tabla_conflictos %>%
+  group_by(Usuario) %>%
+  summarise(total_actividades = sum(Total))
+
+
+```
+
+Como se puede apreciar en la actividad de estos dos usuarios, que hacen más actividades de profesor que de otra cosa, sobretodo `U0072` el cual es bastante probable que sea el **profesor principal**, dado a que realiza una gran variedad de actividades, destacando las de profesor como crea preguntas, gestionar sesiones de asistencia, borrar calificaciones. Como tiene una gran variedad de actividades, es muy poco probable que sea un bot que ha realizado muchas actividades *(13079 registros)* siendo actividades de estudiante, de administrador y de profesor. Esto indica que es una pieza clave a la hora de gestionar el curso por eso es muy probable que sea el **profesor principal**
+
+En su cambio el `U0095` ha realizado muchas actividades menos *(2836)*. Aquí la duda estaba en si era **administrador o profesor**, ha realizado alguna actividad de administrador, pero no es lo principal. Principalmente ha realizado tareas de profesor, sobretodo relacionado con cuestionarios. Así sería bastante normal que fuera **otro profesor**, pero sin tanta importancia como el `U0072`
+
+Arreglamos los datos que tenemos
+
+```{r, arreglar los listas de roles}
+administradores <- administradores[administradores$Nombre.completo.del.usuario != "U0072",]
+administradores <- administradores[administradores$Nombre.completo.del.usuario != "U0095",]
+alumnos <- alumnos[alumnos$Nombre.completo.del.usuario != "U0072",]
+```
+
+Ahora sí que sí, que ya no hay casos raros podemos analizar los datos que hemos obtenido
+
+```{r}
+# Unimos todo
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+
+roles_todos
+```
+
+Aquí se queda fuera muchos usuarios, dado a que solo tienen la actividad de `Usuario calificado`, o demasiada poca actividad como para ser relevante. Hay varios que se han quedado fuera que es probable que sean observadores.
+
+Es muy probable que `U0001` sea un bot, porque `Usuario calificado` es la única cosa que hace, lo que encajaría bastante con poner notas automáticas etc.
+
+Otro caso especial es `U0002`, que es administrador, dado a que creó el curso. Y cuadra con lo anterior, tiene sentido que el primer usuario sea el bot, y el segundo quien creo y designo roles en el curso
+
+```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol"}
+
+ggplot(roles_todos, aes(x = rol, fill = rol)) +
+  geom_bar() +
+  labs(
+    title = "Número de usuarios por rol",
+    x = "Rol",
+    y = "Nº de usuarios"
+  ) +
+  theme_minimal()
+
+```
+
+En respuesta a la pregunta inicial, es complicado distinguir entre profesores, alumnos y administradores. Pero acotandose a unos criterios se puede trabajar un poco con esos datos, como las preguntas que se van a realizar a continuación.
+
+## PREGUNTA 10
+
+*¿A qué hora del día se entra más al aula virtual los **alumnos** y los **profesores** según el día de la semana?*
+
+Para resolver esta cuestión se va a realizar utilizaremos **dos mapas de calor**. *¿Por qué un heatmap?* La pregunta tiene dos dimensiones simultáneas (hora del día × día de la semana) más la separación por rol. Un `heatmap` con `facet_wrap` permite ver de un vistazo en qué celdas se concentra la actividad, algo que sería muy difícil de leer con barras agrupadas.
+
+```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual"}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+
+# Preprocesamos usando los df de los roles
+logs_hora <- logs %>%
+  mutate(
+    Hora_dt    = dmy_hms(Hora),
+    Hora_dia   = hour(Hora_dt),
+    Dia_Semana = wday(Hora_dt, label = TRUE, abbr = FALSE, week_start = 1)
+  ) %>%
+  # Filtramos para asegurar que solo procesamos usuarios conocidos
+  filter(
+    Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario |
+    Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario
+  ) %>%
+  # Asignamos Rol según su pertenencia a los DF de la Pregunta 9
+  mutate(
+    Rol = case_when(
+      Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario    ~ "Alumnado",
+      Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario ~ "Profesorado"
+    )
+  )
+
+# Agrupar
+logs_heatmap <- logs_hora %>%
+  group_by(Rol, Dia_Semana, Hora_dia) %>%
+  summarise(Total = n(), .groups = "drop")
+
+# Hacer mapa de calor
+hacer_heatmap_limpio <- function(datos, rol, color_bajo, color_alto) {
+  ggplot(datos %>% filter(Rol == rol), 
+         aes(x = Dia_Semana, y = Hora_dia, fill = Total)) +
+    geom_tile(color = "white", linewidth = 0.1) +
+    # Usamos gradiente lineal para que sea más suave y fácil de leer
+    scale_fill_gradient(low = color_bajo, high = color_alto, 
+                        name = "Nº eventos") +
+    scale_y_continuous(breaks = 0:23, labels = paste0(0:23, "h")) +
+    labs(
+      title = paste("Actividad por hora y día —", rol),
+      x     = "Día de la semana",
+      y     = "Hora del día"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 10),  # texto días
+      axis.text.y = element_text(size = 9),                         # ← texto horas
+      axis.title.y = element_text(size = 11, margin = margin(r = 8)), # opcional
+      axis.title.x = element_text(size = 11))
+}
+
+# Generar Gráficos
+# Alumnado
+hacer_heatmap_limpio(logs_heatmap, "Alumnado", "#f7fbff", "steelblue")
+
+# Profesorado
+hacer_heatmap_limpio(logs_heatmap, "Profesorado", "#fff5eb", "darkorange")
+```
+
+El heatmap muestra claramente que la actividad del **alumnado** se concentra en la franja horaria de **9h a 14h** durante los días lectivos (lunes a viernes), con un segundo pico muy moderado entre las **16h y las 20h**. Esto coincide con los horarios de clase presencial y con las horas de estudio vespertino habituales. Durante el fin de semana, la actividad cae notablemente, aunque el domingo presenta un repunte puntual por la tarde, probablemente asociado a la entrega de tareas de inicio de semana. Menos en la mañana del domingo que hay poca actividad. Además cabe destacar, que a diferencia de los **profesores**, hay actividad durante las 24h del día, indicando que, aunque pocos, hay actividad incluso en la madruda.
+
+El **profesorado**, por su parte, muestra una distribución menos dispersa a lo largo del día y con una intensidad global mucho menor (en parte porque son menos usuarios). Su actividad tiende a concentrarse en **horario de mañana entre semana**, coincidiendo con la jornada laboral, y prácticamente desaparece los fines de semana. También hay un segundo pico muy moderado **por la tarde**. Es muy sorprendente que a diferencia de los **alumnos**, no hay actividad registrada en horas de sueño.
+
+Igualmente, se sigue reflejando la mayor actividad los **miércoles** y los **viernes** lo cual se indicaba en una figura anterior \@ref(fig:fig2) para los alumnos. Casualmente, el día de antes los profesores tienes más actividad.
+
+En conclusión, ambos grupos siguen un patrón marcadamente laboral/académico: el uso del aula virtual sigue los ritmos del horario escolar y las franjas horarias diurnas en el caso de los profesores, siendo el alumnado quien genera la mayor parte del tráfico, especialmente en las horas de tarde-noche
+
+## PREGUNTA 11
+
+*¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
+
+Primero vamos a filtrar la información para poder hacer los gráficos. Así como calcular todas las sesiones realizadas para poder hacer un porcentaje de asistencias. Según este porcentaje
+
+```{r, asistencias}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+
+#Identificamos alumnos
+alumnos <- logs %>%
+  filter(Nombre.evento %in% c(
+    "Asistencia confirmada por el alumno",
+    "Se ha enviado una entrega",
+    "Intento de cuestionario actualizado"
+  )) %>%
+  distinct(Nombre.completo.del.usuario)
+
+# Filtramos firmas de asistencia solo de alumnos
+asistencia <- logs %>%
+  filter(
+    Componente == "Asistencia",
+    Nombre.evento == "Asistencia confirmada por el alumno",
+    Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario
+  ) %>%
+  mutate(Fecha = as.Date(dmy_hms(Hora)))
+
+#Total de sesiones únicas del curso
+total_sesiones <- asistencia %>%
+  distinct(Fecha) %>%
+  nrow()
+# 22 sesiones
+
+# Asistencias por alumno y porcentaje
+# Incluimos también alumnos que nunca firmaron (0 asistencias)
+asistencia_alumno <- alumnos %>%
+  left_join(
+    asistencia %>%
+      group_by(Nombre.completo.del.usuario) %>%
+      summarise(Sesiones_Asistidas = n_distinct(Fecha), .groups = "drop"),
+    by = "Nombre.completo.del.usuario"
+  ) %>%
+  mutate(
+    Sesiones_Asistidas = replace_na(Sesiones_Asistidas, 0),
+    Pct_Asistencia     = round(Sesiones_Asistidas / total_sesiones * 100, 1)
+  )
+
+# Clasificación por nivel
+asistencia_alumno <- asistencia_alumno %>%
+  mutate(
+    Nivel = case_when(
+      Pct_Asistencia >= 75 ~ "Alta (≥75%)",
+      Pct_Asistencia >= 50 ~ "Media (50–74%)",
+      Pct_Asistencia >= 25 ~ "Baja (25–49%)",
+      TRUE                 ~ "Muy baja (<25%)"
+    ),
+    Nivel = factor(Nivel, levels = c("Alta (≥75%)", "Media (50–74%)",
+                                     "Baja (25–49%)", "Muy baja (<25%)"))
+  )
+```
+
+Ahora que tenemos todo listo, vamos a hacer las tablas:
+
+```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual"}
+ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
+  geom_histogram(binwidth = 5, color = "white") +
+  geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",
+             color = "grey40", linewidth = 0.7) +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title    = "Distribución de la asistencia online del alumnado",
+    subtitle = paste("Total de sesiones del curso:", total_sesiones),
+    x        = "% de sesiones firmadas",
+    y        = "Número de alumnos",
+    fill     = "Nivel de asistencia"
+  ) +
+  theme_minimal()
+```
+
+```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia"}
+resumen_niveles <- asistencia_alumno %>% count(Nivel)
+
+ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +
+  geom_col(show.legend = FALSE, width = 0.6) +
+  geom_text(aes(label = n), vjust = -0.4, size = 4) +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title = "Clasificación del alumnado por nivel de asistencia",
+    x     = "Nivel de asistencia",
+    y     = "Número de alumnos"
+  ) +
+  theme_minimal()
+```
+
+Para analizar la regularidad en la firma de asistencia online, se filtraron los eventos `"Asistencia confirmada por el alumno"` del componente `Asistencia`. Durante el curso se registraron **22 sesiones** únicas, y **71 alumnos** firmaron al menos una vez.
+
+El histograma muestra una distribución claramente **polarizada**: hay un grupo numeroso de alumnos con asistencia muy alta (por encima del 75%), pero también un grupo considerable con asistencia baja o muy baja, con pocos alumnos en la franja intermedia. Esto sugiere que no existe un comportamiento uniforme: los alumnos tienden a ser o muy regulares o muy irregulares, sin término medio.
+
+La clasificación por niveles confirma esta tendencia. El grupo de asistencia **Alta (≥75%)** es el más numeroso, lo que indica que la mayoría del alumnado sí firma de forma consistente. Sin embargo, el peso del grupo de asistencia **Muy baja (\<25%)** no es despreciable, e identifica a alumnos que prácticamente no participan en el control de asistencia online.
+
+En conclusión, sí es posible clasificar a los alumnos por su nivel de asistencia, y esta segmentación resulta útil para detectar perfiles de riesgo académico dentro del curso.
+
+## PREGUNTA 12
+
+*¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
+
+```{r, tareas-segun-asistencia}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+
+# Contamos las entregas de tareas por alumno
+entregas <- logs %>%
+  filter(Nombre.evento == "Se ha enviado una entrega") %>%
+  count(Nombre.completo.del.usuario, name = "Tareas_Entregadas")
+
+# Unimos con la tabla de asistencia
+asistencia_entregas <- asistencia_alumno %>%
+  left_join(entregas, by = "Nombre.completo.del.usuario") %>%
+  mutate(Tareas_Entregadas = replace_na(Tareas_Entregadas, 0))
+
+# Resumen por nivel de asistencia
+resumen <- asistencia_entregas %>%
+  group_by(Nivel) %>%
+  summarise(
+    Num_Alumnos = n(),
+    Media_Tareas = round(mean(Tareas_Entregadas), 2),
+    Mediana_Tareas = median(Tareas_Entregadas),
+    Max_Tareas = max(Tareas_Entregadas),
+    Total_Entregas = sum(Tareas_Entregadas),
+    .groups = "drop"
+  )
+
+print(resumen)
+
+# Gráfico principa
+ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel)) +
+  geom_boxplot(alpha = 0.8, outlier.shape = 16, outlier.size = 2) +
+  geom_jitter(width = 0.2, alpha = 0.3, size = 1.5) +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title = "Entrega de tareas según nivel de asistencia",
+    subtitle = "Boxplot + puntos individuales",
+    x = "Nivel de asistencia",
+    y = "Número de tareas entregadas"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+
+# Gráfico de barras
+ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +
+  geom_col(width = 0.7, alpha = 0.9) +
+  geom_text(aes(label = Media_Tareas), vjust = -0.4, size = 4.5, fontface = "bold") +
+  scale_fill_manual(values = c(
+    "Alta (≥75%)"     = "steelblue",
+    "Media (50–74%)"  = "lightblue",
+    "Baja (25–49%)"   = "lightyellow",
+    "Muy baja (<25%)" = "lightsalmon"
+  )) +
+  labs(
+    title = "Promedio de tareas entregadas por nivel de asistencia",
+    x = "Nivel de asistencia",
+    y = "Media de tareas entregadas"
+  ) +
+  theme_minimal()
+
+```
+
+En la figura anterior se observa una clara relación positiva entre el nivel de asistencia y el número de tareas entregadas.
+
+Los alumnos con **asistencia alta (≥75%)** son los que más tareas entregan, con una media de aproximadamente X tareas por alumno. Por el contrario, los alumnos con **asistencia muy baja (\<25%)** presentan una media notablemente inferior (cerca de Y tareas), y un mayor número de alumnos que no entregan prácticamente ninguna tarea. Pero este grupo es el que más variedad posee, en cambio el de **asistencia alta (≥75%)** es mucho menos variable, es más normal entregarlo todo.
+
+Esto confirma que los alumnos que no asisten regularmente también tienden a entregar menos tareas, lo que sugiere una correlación entre el compromiso con la asignatura (medido por la asistencia) y el rendimiento en las actividades evaluables.
+
+**Conclusión**: Sí existe una relación clara. Los alumnos con baja asistencia son también los menos activos en la entrega de tareas.

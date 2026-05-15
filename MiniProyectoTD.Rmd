@@ -331,85 +331,33 @@ Como conclusión, los datos reflejan que el aula virtual funciona esencialmente 
 *¿Se puede diferenciar entre **alumnos**, **profesores** y **administradores**?*
 
 Encontramos 3 posibles roles, *alumno*, *profesor* y *administrador*. Para diferenciarlos, seguiremos los siguientes critérios:
-
 -   **Alumno**
-
     -   Ha firmado asistencia `Asistencia confirmada por el alumno`
-
     -   Ha enviado una entrega `Se ha enviado una entrega`
-
     -   Ha intentado un cuestionario `Intento de cuestionario actualizado`
-
     -   Ha sido calificado. Dentro de `Usuario afectado`, cuando se hace `Usuario Calificado`
-
 -   **Profesor**
-
     -   Ha creado preguntas de cuestionario `Pregunta creada`
-
     -   Ha actualizado o borrado calificaciones `Elemento de calificación actualizado`, `Calificación borrada`
-
     -   Ha gestionado sesiones de asistencia `Sesión añadida` , `Sesión actualizada`, `Sesión eliminada`
-
     -   Ha actualizado el calendario del curso `Evento de calendario actualizado`
-
     -   Es quien aparece calificando a otros, Dentro de `Nombre completo del usuario` , cuando hay `Usuario calificado`
-
 -   **Administrador**
-
     -   Ha matriculado usuarios `Usuario matriculado en el curso`
-
     -   Ha asignado roles `Rol asignado`
-
     -   Ha creado secciones del curso `Sección del curso creada`
 
 Dado que no podemos confirmar con total certeza que los eventos registrados corresponden exclusivamente a un único tipo de usuario, vamos a clasificar a todos los usuarios según los tres roles posibles: alumno, profesor y administrador. A continuación, comprobaremos si algún usuario queda clasificado en más de un rol simultáneamente, lo que nos permitirá detectar criterios de clasificación poco fiables o contradictorios.
 
 ```{r,establecer roles}
-
-
 # Criterios por rol
 alumnos <- logs %>%
-  filter(Nombre.evento %in% c(
-    "Asistencia confirmada por el alumno",
-    "Se ha enviado una entrega",
-    "Intento de cuestionario actualizado"
-  )) %>%
-  distinct(Nombre.completo.del.usuario) %>%
-  mutate(rol = "Alumno")
-
-profesores <- logs %>%
-  filter(Nombre.evento %in% c(
-    "Pregunta creada",
-    "Elemento de calificación actualizado",
-    "Calificación borrada",
-    "Sesión añadida",
-    "Sesión actualizada",
-    "Sesión eliminada",
-    "Evento de calendario actualizado"
-  )) %>%
-  distinct(Nombre.completo.del.usuario) %>%
-  mutate(rol = "Profesor")
-
-administradores <- logs %>%
-  filter(Nombre.evento %in% c(
-    "Usuario matriculado en el curso",
-    "Rol asignado",
-    "Sección del curso creada"
-  )) %>%
-  distinct(Nombre.completo.del.usuario) %>%
-  mutate(rol = "Administrador")
+  filter(Nombre.evento %in% c("Asistencia confirmada por el alumno","Se ha enviado una entrega","Intento de cuestionario actualizado")) %>%distinct(Nombre.completo.del.usuario) %>%mutate(rol = "Alumno")
+profesores <- logs %>%filter(Nombre.evento %in% c("Pregunta creada","Elemento de calificación actualizado","Calificación borrada","Sesión añadida","Sesión actualizada","Sesión eliminada","Evento de calendario actualizado")) %>%distinct(Nombre.completo.del.usuario) %>%mutate(rol = "Profesor")
+administradores <- logs %>%filter(Nombre.evento %in% c("Usuario matriculado en el curso","Rol asignado","Sección del curso creada")) %>%distinct(Nombre.completo.del.usuario) %>%mutate(rol = "Administrador")
 roles_todos <- bind_rows(alumnos, profesores, administradores)
-
-roles_todos <- bind_rows(alumnos, profesores, administradores)
-
 # Usuarios con más de un rol
-conflictos <- roles_todos %>%
-  group_by(Nombre.completo.del.usuario) %>%
-  summarise(roles = paste(sort(unique(rol)), collapse = " + "),
-            n_roles = n_distinct(rol)) %>%
-  filter(n_roles > 1) %>%
-  arrange(desc(n_roles))
-
+conflictos <- roles_todos %>%group_by(Nombre.completo.del.usuario) %>%summarise(roles = paste(sort(unique(rol)), collapse = " + "),n_roles = n_distinct(rol)) %>%filter(n_roles > 1) %>%arrange(desc(n_roles))
 print(conflictos)
 ```
 
@@ -418,34 +366,13 @@ Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado 
 head(tabla_conflictos)
 
 ```{r conflictos_roles}
-
 conflictivos <- c("U0072", "U0095")
-
 # Tabla con nombres de columnas correctos
-tabla_conflictos <- logs %>%
-  filter(Nombre.completo.del.usuario %in% conflictivos) %>%
-  count(Nombre.completo.del.usuario, Nombre.evento) %>%
-  arrange(Nombre.completo.del.usuario, desc(n)) %>%
-  rename(Usuario = Nombre.completo.del.usuario,
-         Evento = Nombre.evento,
-         Total = n) %>%
-  mutate(Evento = case_when(
-    Evento == "Asistencia confirmada por el alumno" ~ "Asistencia confirmada",
-    Evento == "Elemento de calificación actualizado" ~ "Elem. calif. actualizado",
-    Evento == "Usuario matriculado en el curso" ~ "Usuario matriculado",
-    Evento == "Evento de calendario actualizado" ~ "Evento calendario",
-    TRUE ~ Evento
-  ))
-
+tabla_conflictos <- logs %>%filter(Nombre.completo.del.usuario %in% conflictivos) %>%count(Nombre.completo.del.usuario, Nombre.evento) %>%arrange(Nombre.completo.del.usuario, desc(n)) %>%rename(Usuario = Nombre.completo.del.usuario,Evento = Nombre.evento,Total = n) %>%mutate(Evento = case_when(Evento == "Asistencia confirmada por el alumno" ~ "Asistencia confirmada",Evento == "Elemento de calificación actualizado" ~ "Elem. calif. actualizado",Evento == "Usuario matriculado en el curso" ~ "Usuario matriculado",Evento == "Evento de calendario actualizado" ~ "Evento calendario",TRUE ~ Evento))
 # Mostrar tabla
-head(tabla_conflictos)
-
+head(tabla_conflictos,3)
 # Total actividades por usuario
-tabla_conflictos %>%
-  group_by(Usuario) %>%
-  summarise(total_actividades = sum(Total))
-
-
+tabla_conflictos %>%group_by(Usuario) %>%summarise(total_actividades = sum(Total))
 ```
 
 Como se puede apreciar en la actividad de estos dos usuarios, que hacen más actividades de profesor que de otra cosa, sobretodo `U0072` el cual es bastante probable que sea el **profesor principal**, dado a que realiza una gran variedad de actividades, destacando las de profesor como crea preguntas, gestionar sesiones de asistencia, borrar calificaciones. Como tiene una gran variedad de actividades, es muy poco probable que sea un bot que ha realizado muchas actividades *(13079 registros)* siendo actividades de estudiante, de administrador y de profesor. Esto indica que es una pieza clave a la hora de gestionar el curso por eso es muy probable que sea el **profesor principal**
@@ -465,7 +392,6 @@ Ahora sí que sí, que ya no hay casos raros podemos analizar los datos que hemo
 ```{r}
 # Unimos todo
 roles_todos <- bind_rows(alumnos, profesores, administradores)
-
 head(roles_todos)
 ```
 
@@ -476,16 +402,7 @@ Es muy probable que `U0001` sea un bot, porque `Usuario calificado` es la única
 Otro caso especial es `U0002`, que es administrador, dado a que creó el curso. Y cuadra con lo anterior, tiene sentido que el primer usuario sea el bot, y el segundo quien creo y designo roles en el curso
 
 ```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
-
-ggplot(roles_todos, aes(x = rol, fill = rol)) +
-  geom_bar() +
-  labs(
-    title = "Número de usuarios por rol",
-    x = "Rol",
-    y = "Nº de usuarios"
-  ) +
-  theme_minimal()
-
+ggplot(roles_todos, aes(x = rol, fill = rol)) +geom_bar() +labs(title = "Número de usuarios por rol",x = "Rol",y = "Nº de usuarios") +theme_minimal()
 ```
 
 En respuesta a la pregunta inicial, es complicado distinguir entre profesores, alumnos y administradores. Pero acotandose a unos criterios se puede trabajar un poco con esos datos, como las preguntas que se van a realizar a continuación.
@@ -496,60 +413,22 @@ En respuesta a la pregunta inicial, es complicado distinguir entre profesores, a
 
 Para resolver esta cuestión se va a realizar utilizaremos **dos mapas de calor**. *¿Por qué un heatmap?* La pregunta tiene dos dimensiones simultáneas (hora del día × día de la semana) más la separación por rol. Un `heatmap` con `facet_wrap` permite ver de un vistazo en qué celdas se concentra la actividad, algo que sería muy difícil de leer con barras agrupadas.
 
-```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
-
-
-
+```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
 # Preprocesamos usando los df de los roles
-logs_hora <- logs %>%
-  mutate(
-    Hora_dt    = dmy_hms(Hora),
-    Hora_dia   = hour(Hora_dt),
-    Dia_Semana = wday(Hora_dt, label = TRUE, abbr = FALSE, week_start = 1)
-  ) %>%
+logs_hora <- logs %>%mutate(Hora_dt    = dmy_hms(Hora),Hora_dia   = hour(Hora_dt),Dia_Semana = wday(Hora_dt, label = TRUE, abbr = FALSE, week_start = 1)) %>%
   # Filtramos para asegurar que solo procesamos usuarios conocidos
-  filter(
-    Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario |
-    Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario
-  ) %>%
+  filter(Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario |Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario) %>%
   # Asignamos Rol según su pertenencia a los DF de la Pregunta 9
-  mutate(
-    Rol = case_when(
-      Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario    ~ "Alumnado",
-      Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario ~ "Profesorado"
-    )
-  )
-
+mutate(Rol = case_when(Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario    ~ "Alumnado",Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario ~ "Profesorado"))
 # Agrupar
-logs_heatmap <- logs_hora %>%
-  group_by(Rol, Dia_Semana, Hora_dia) %>%
-  summarise(Total = n(), .groups = "drop")
-
+logs_heatmap <- logs_hora %>%group_by(Rol, Dia_Semana, Hora_dia) %>%summarise(Total = n(), .groups = "drop")
 # Hacer mapa de calor
-hacer_heatmap_limpio <- function(datos, rol, color_bajo, color_alto) {
-  ggplot(datos %>% filter(Rol == rol), 
-         aes(x = Dia_Semana, y = Hora_dia, fill = Total)) +
-    geom_tile(color = "white", linewidth = 0.1) +
+hacer_heatmap_limpio <- function(datos, rol, color_bajo, color_alto) {ggplot(datos %>% filter(Rol == rol), aes(x = Dia_Semana, y = Hora_dia, fill = Total)) +geom_tile(color = "white", linewidth = 0.1) +
     # Usamos gradiente lineal para que sea más suave y fácil de leer
-    scale_fill_gradient(low = color_bajo, high = color_alto, 
-                        name = "Nº eventos") +
-    scale_y_continuous(breaks = 0:23, labels = paste0(0:23, "h")) +
-    labs(
-      title = paste("Actividad por hora y día —", rol),
-      x     = "Día de la semana",
-      y     = "Hora del día"
-    ) +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 10),  # texto días
-      axis.text.y = element_text(size = 5),                         # texto horas
-      axis.title.y = element_text(size = 11, margin = margin(r = 8)), 
-      axis.title.x = element_text(size = 11))
-}
-
+scale_fill_gradient(low = color_bajo, high = color_alto, name = "Nº eventos") +scale_y_continuous(breaks = 0:23, labels = paste0(0:23, "h")) +labs(title = paste("Actividad por hora y día —", rol),x= "Día de la semana",y= "Hora del día") +theme_minimal() +theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 6), axis.text.y = element_text(size = 3), axis.title.y = element_text(size = 6, margin = margin(r = 4)), axis.title.x = element_text(size = 6))}
 # Generar Gráficos
 # Alumnado
 hacer_heatmap_limpio(logs_heatmap, "Alumnado", "#f7fbff", "steelblue")
-
 # Profesorado
 hacer_heatmap_limpio(logs_heatmap, "Profesorado", "#fff5eb", "darkorange")
 ```
@@ -569,101 +448,30 @@ En conclusión, ambos grupos siguen un patrón marcadamente laboral/académico: 
 Primero vamos a filtrar la información para poder hacer los gráficos. Así como calcular todas las sesiones realizadas para poder hacer un porcentaje de asistencias. Según este porcentaje
 
 ```{r, asistencias}
-
-
 #Identificamos alumnos
-alumnos <- logs %>%
-  filter(Nombre.evento %in% c(
-    "Asistencia confirmada por el alumno",
-    "Se ha enviado una entrega",
-    "Intento de cuestionario actualizado"
-  )) %>%
-  distinct(Nombre.completo.del.usuario)
-
+alumnos <- logs %>%filter(Nombre.evento %in% c("Asistencia confirmada por el alumno","Se ha enviado una entrega","Intento de cuestionario actualizado")) %>%distinct(Nombre.completo.del.usuario)
 # Filtramos firmas de asistencia solo de alumnos
-asistencia <- logs %>%
-  filter(
-    Componente == "Asistencia",
-    Nombre.evento == "Asistencia confirmada por el alumno",
-    Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario
-  ) %>%
-  mutate(Fecha = as.Date(dmy_hms(Hora)))
-
+asistencia <- logs %>%filter(Componente == "Asistencia",Nombre.evento == "Asistencia confirmada por el alumno",Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario) %>%mutate(Fecha = as.Date(dmy_hms(Hora)))
 #Total de sesiones únicas del curso
-total_sesiones <- asistencia %>%
-  distinct(Fecha) %>%
-  nrow()
+total_sesiones <- asistencia %>%distinct(Fecha) %>%nrow()
 # 22 sesiones
-
 # Asistencias por alumno y porcentaje
 # Incluimos también alumnos que nunca firmaron (0 asistencias)
-asistencia_alumno <- alumnos %>%
-  left_join(
-    asistencia %>%
-      group_by(Nombre.completo.del.usuario) %>%
-      summarise(Sesiones_Asistidas = n_distinct(Fecha), .groups = "drop"),
-    by = "Nombre.completo.del.usuario"
-  ) %>%
-  mutate(
-    Sesiones_Asistidas = replace_na(Sesiones_Asistidas, 0),
-    Pct_Asistencia     = round(Sesiones_Asistidas / total_sesiones * 100, 1)
-  )
-
+asistencia_alumno <- alumnos %>%left_join(asistencia %>%group_by(Nombre.completo.del.usuario) %>%summarise(Sesiones_Asistidas = n_distinct(Fecha), .groups = "drop"),by = "Nombre.completo.del.usuario") %>%mutate(Sesiones_Asistidas = replace_na(Sesiones_Asistidas, 0),Pct_Asistencia     = round(Sesiones_Asistidas / total_sesiones * 100, 1))
 # Clasificación por nivel
-asistencia_alumno <- asistencia_alumno %>%
-  mutate(
-    Nivel = case_when(
-      Pct_Asistencia >= 75 ~ "Alta (>=75%)",
-      Pct_Asistencia >= 50 ~ "Media (50–74%)",
-      Pct_Asistencia >= 25 ~ "Baja (25–49%)",
-      TRUE                 ~ "Muy baja (<25%)"
-    ),
-    Nivel = factor(Nivel, levels = c("Alta (>=75%)", "Media (50–74%)",
-                                     "Baja (25–49%)", "Muy baja (<25%)"))
+asistencia_alumno <- asistencia_alumno %>%mutate(Nivel = case_when(Pct_Asistencia >= 75 ~ "Alta (>=75%)",Pct_Asistencia >= 50 ~ "Media (50–74%)",Pct_Asistencia >= 25 ~ "Baja (25–49%)",TRUE ~ "Muy baja (<25%)"),Nivel = factor(Nivel, levels = c("Alta (>=75%)", "Media (50–74%)","Baja (25–49%)", "Muy baja (<25%)"))
   )
 ```
 
 Ahora que tenemos todo listo, vamos a hacer las tablas:
 
-```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
-ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
-  geom_histogram(binwidth = 5, color = "white") +
-  geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",
-             color = "grey40", linewidth = 0.7) +
-  scale_fill_manual(values = c(
-    "Alta (>=75%)"     = "steelblue",
-    "Media (50–74%)"  = "lightblue",
-    "Baja (25–49%)"   = "lightyellow",
-    "Muy baja (<25%)" = "lightsalmon"
-  )) +
-  labs(
-    title    = "Distribución de la asistencia online del alumnado",
-    subtitle = paste("Total de sesiones del curso:", total_sesiones),
-    x        = "% de sesiones firmadas",
-    y        = "Número de alumnos",
-    fill     = "Nivel de asistencia"
-  ) +
-  theme_minimal()
+```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
+ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +geom_histogram(binwidth = 5, color = "white") +geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",color = "grey40", linewidth = 0.7)+scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title    = "Distribución de la asistencia online del alumnado",subtitle = paste("Total de sesiones del curso:", total_sesiones),x = "% de sesiones firmadas",y = "Número de alumnos",fill = "Nivel de asistencia") +theme_minimal()
 ```
 
 ```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
 resumen_niveles <- asistencia_alumno %>% count(Nivel)
-
-ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +
-  geom_col(show.legend = FALSE, width = 0.6) +
-  geom_text(aes(label = n), vjust = -0.4, size = 4) +
-  scale_fill_manual(values = c(
-    "Alta (>=75%)"     = "steelblue",
-    "Media (50–74%)"  = "lightblue",
-    "Baja (25–49%)"   = "lightyellow",
-    "Muy baja (<25%)" = "lightsalmon"
-  )) +
-  labs(
-    title = "Clasificación del alumnado por nivel de asistencia",
-    x     = "Nivel de asistencia",
-    y     = "Número de alumnos"
-  ) +
-  theme_minimal()
+ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +geom_col(show.legend = FALSE, width = 0.6) +geom_text(aes(label = n), vjust = -0.4, size = 4) +scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title = "Clasificación del alumnado por nivel de asistencia",x= "Nivel de asistencia",y= "Número de alumnos") +theme_minimal()
 ```
 
 Para analizar la regularidad en la firma de asistencia online, se filtraron los eventos `"Asistencia confirmada por el alumno"` del componente `Asistencia`. Durante el curso se registraron **22 sesiones** únicas, y **71 alumnos** firmaron al menos una vez.
@@ -680,67 +488,20 @@ En conclusión, sí es posible clasificar a los alumnos por su nivel de asistenc
 
 ```{r, tareas-segun-asistencia, fig.align='center', fig.pos='H', out.extra=''}
 # Contamos las entregas de tareas por alumno
-entregas <- logs %>%
-  filter(Nombre.evento == "Se ha enviado una entrega") %>%
-  count(Nombre.completo.del.usuario, name = "Tareas_Entregadas")
-
+entregas <- logs %>%filter(Nombre.evento == "Se ha enviado una entrega") %>%count(Nombre.completo.del.usuario, name = "Tareas_Entregadas")
 # Unimos con la tabla de asistencia
-asistencia_entregas <- asistencia_alumno %>%
-  left_join(entregas, by = "Nombre.completo.del.usuario") %>%
-  mutate(Tareas_Entregadas = replace_na(Tareas_Entregadas, 0))
-
+asistencia_entregas <- asistencia_alumno %>%left_join(entregas, by = "Nombre.completo.del.usuario") %>%mutate(Tareas_Entregadas = replace_na(Tareas_Entregadas, 0))
 # Resumen por nivel de asistencia
-resumen <- asistencia_entregas %>%
-  group_by(Nivel) %>%
-  summarise(
-    Num_Alumnos = n(),
-    Media_Tareas = round(mean(Tareas_Entregadas), 2),
-    Mediana_Tareas = median(Tareas_Entregadas),
-    Max_Tareas = max(Tareas_Entregadas),
-    Total_Entregas = sum(Tareas_Entregadas),
-    .groups = "drop"
-  )
-
+resumen <- asistencia_entregas %>%group_by(Nivel) %>%summarise(Num_Alumnos = n(),Media_Tareas = round(mean(Tareas_Entregadas), 2),Mediana_Tareas = median(Tareas_Entregadas),Max_Tareas = max(Tareas_Entregadas),Total_Entregas = sum(Tareas_Entregadas),.groups = "drop")
 print(resumen)
-
 # Gráfico principa
-ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel)) +
-  geom_boxplot(alpha = 0.8, outlier.shape = 16, outlier.size = 2) +
-  geom_jitter(width = 0.2, alpha = 0.3, size = 1.5) +
-  scale_fill_manual(values = c(
-    "Alta (>=75%)"     = "steelblue",
-    "Media (50–74%)"  = "lightblue",
-    "Baja (25–49%)"   = "lightyellow",
-    "Muy baja (<25%)" = "lightsalmon"
-  )) +
-  labs(
-    title = "Entrega de tareas según nivel de asistencia",
-    subtitle = "Boxplot + puntos individuales",
-    x = "Nivel de asistencia",
-    y = "Número de tareas entregadas"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel)) +geom_boxplot(alpha = 0.8, outlier.shape = 16, outlier.size = 2) +geom_jitter(width = 0.2, alpha = 0.3, size = 1.5) +scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title = "Entrega de tareas según nivel de asistencia",subtitle = "Boxplot + puntos individuales",x = "Nivel de asistencia",y = "Número de tareas entregadas") +theme_minimal() +theme(axis.text.x = element_text(angle = 15, hjust = 1))
 ```
 
 
-```{r, fig-segun-asistencia, fig.align='center', fig.pos='H', out.extra='',fig.width=5, fig.height=3,}
+```{r, fig-segun-asistencia, fig.align='center', fig.pos='H', out.extra='',fig.width=6, fig.height=2,}
 # Gráfico de barras
-ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +
-  geom_col(width = 0.7, alpha = 0.9) +
-  geom_text(aes(label = Media_Tareas), vjust = -0.4, size = 4.5, fontface = "bold") +
-  scale_fill_manual(values = c(
-    "Alta (>=75%)"     = "steelblue",
-    "Media (50–74%)"  = "lightblue",
-    "Baja (25–49%)"   = "lightyellow",
-    "Muy baja (<25%)" = "lightsalmon"
-  )) +
-  labs(
-    title = "Promedio de tareas entregadas por nivel de asistencia",
-    x = "Nivel de asistencia",
-    y = "Media de tareas entregadas"
-  ) +
-  theme_minimal()
+ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +geom_col(width = 0.7, alpha = 0.9) +geom_text(aes(label = Media_Tareas), vjust = -0.4, size = 4.5, fontface = "bold") +scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title = "Promedio de tareas entregadas por nivel de asistencia",x = "Nivel de asistencia",y = "Media de tareas entregadas") +theme_minimal()
 ```
 
 

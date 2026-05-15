@@ -51,6 +51,7 @@ library(lubridate)
 library(tidyverse)
 library(knitr)
 library(tidyr)
+library(kableExtra)
 ```
 
 # Introducción
@@ -180,30 +181,11 @@ ggplot(logs_semanal, aes(x = Dia_Semana, y = Total_Eventos, fill = Dia_Semana)) 
 
 ```
 
-Mirando la grafica \ref{fig:fig2} podemos observar la distribucion de la
-actividad durante la semana. Podemos ver, que, evidentemente, los dias
-de la semana con mas peso son los dias lectivos, lo que sugiere que los
-usuarios acceden con mayor frecuencia entre semana para la consulta de
-materiales para poder realizar tanto sus practicas como sus actividades
-en las horas lectivas. Observamos, que entre los dias de mas frecuencia,
-que son los lunes, martes, miercoles, jueves y viernes, hay dias mas
-frecuentados que otros. Por ejemplo el lunes es el dia que menos se
-consulta, no como el miercoles que es el que mas.
+Mirando la grafica \ref{fig:fig2} podemos observar la distribucion de la actividad durante la semana. Los dias con mas peso son los dias lectivos, lo que hace entender que los usuarios acceden con mayor frecuencia entre semana para consultar materiales y realizar practicas o actividades. El miercoles es el dia con mas actividad, mientras que el lunes es el que menos tiene dentro de los dias lectivos.
 
-Respecto al fin de semana, se nota una caida significativa. Si
-comparamos un dia lectivo frente a un dia del fin de semana podemos
-observar que decae aproximadamente un 70%. El sabado se posiciona como
-el dia de minima interaccion con apenas 5.000 registros, muy pocos a
-comparacion de la media de entre semana que es de 20.000 registros. En
-cambio, el domingo, parece que la semana nueva se va acercando y sube un
-poco mas, con aproximadamente 7.000 registros. Con esto podemos
-comprobar que los usuarios priorizan los tiempos de descanso durante los
-dias no lectivos.
+Respecto al fin de semana, se nota una caida drastica, llegando decaer la actividad aproximadamente un 70% respecto a un dia lectivo. El sabado es el dia de menor interaccion con unos 5.000 registros, mientras que el domingo sube ligeramente hasta los 7.000.
 
-En conclusion, podemos decir que el comportamiento de los usuarios es
-ciclico, es decir, existe una curva que empieza fuerte el lunes pero que
-decae cuando llega el fin de semana, siendo el sabado el dia de menor
-interaccion.
+En conclusion, el comportamiento de los usuarios es ciclico: la actividad se mantiene alta entre semana y decae al llegar el fin de semana.
 
 ## PREGUNTA 2
 
@@ -258,29 +240,10 @@ logs_sistema <- logs %>%mutate(Hora_dt = parse_date_time(Hora, orders = c("dmy H
 ggplot(logs_sistema, aes(x = Dif_Minutos)) +geom_histogram(binwidth = 0.5, fill = "lightpink", color = "white") +coord_cartesian(xlim = c(0, 10), ylim = c(0, 5000)) +labs(title = "Comportamiento",x = "Minutos entre acciones",y = "Frecuencia")
 ```
 
-Mirando la gráfica \ref{fig:fig3} podemos observar cómo se distribuye el
-tiempo que pasa entre una acción y otra dentro del componente 'Sistema'.
-Se ve claramente que el comportamiento principal es el de "entrar y
-salir", es decir, realizar consultas muy rápidas. Esto se nota porque la
-mayor parte de las acciones se concentran en el primer intervalo,
-específicamente entre los 0 y 1 minuto, donde se superan los 5.000
-registros de frecuencia.
+Mirando la gráfica \ref{fig:fig3} observamos la distribución del tiempo entre acciones en el componente 'Sistema'. El comportamiento principal es de "entrar y salir", con consultas muy rápidas: la mayoría de acciones se concentran en el primer intervalo (0-1 minuto), superando los 5.000 registros.
+A medida que aumenta el tiempo, la frecuencia decrece drásticamente. Comparando el primer minuto con periodos superiores a cinco minutos, la diferencia es notable: el volumen de interacciones es casi inexistente. Esto indica que no hay navegación duradera; los usuarios realizan tareas breves y concretas.
+En conclusión, el uso del sistema se basa en interacciones de corta duración. La curva de descenso rápido confirma que la gran mayoría de sesiones duran segundos, y muy pocas superan los dos o tres minutos.
 
-A medida que aumenta el tiempo en el eje horizontal, observamos que la
-frecuencia decrece de forma drástica. Si comparamos la actividad del
-primer minuto frente a la que ocurre a partir de los cinco minutos, la
-diferencia es muy notable, ya que el volumen de interacciones disminuye
-hasta ser casi inexistente. Esta tendencia descendente nos indica que no
-existe una navegación duradera, sino que los usuarios acceden para
-realizar tareas breves y concretas, terminando su actividad en muy poco
-tiempo.
-
-En conclusión, podemos decir que el uso del sistema se basa en
-interacciones de corta duración. La gráfica presenta una curva de
-descenso rápido, lo que confirma que la gran mayoría de las sesiones
-duran apenas unos segundos y que son muy pocos los casos en los que los
-usuarios mantienen una actividad continuada más allá de los dos o tres
-minutos.
 
 ## PREGUNTA 4
 
@@ -306,31 +269,13 @@ tabla_perfiles <- logs_interaccion %>% count(Tipo_Accion) %>% mutate(Porcentaje 
 knitr::kable(tabla_perfiles, caption = "Comparacion entre la interaccion pasiva y activa",booktabs = TRUE,col.names = c("Tipo de Interacción", "numero de interacciones", "Porcentaje"),align = "lcc", labels="tab:lectores") 
 ```
 
-Para poder profundizar en el comportamiento de los usuarios una vez
-entran en el aula virtual, hemos usado la figura
-\ref{fig:accion-lectura} para comprobar la proporcion entre el consumo
-de contenidos y la participacion directa mediante subida de tareas o
-realizacion de cuestionarios.\
+Para profundizar en el comportamiento de los usuarios una vez entran en el aula virtual, hemos usado la figura \ref{fig:accion-lectura} para comprobar la proporcion entre la visualizacion del contenido y la participacion directa mediante subida de tareas o realizacion de cuestionarios.
 
-Esto lo hemos decidido encasillar en dos grandes grupos, en accion donde
-se almacenan la entrega de tareas, cuestionarios y foros y en lectura,
-donde se almacenan las consultas de materiales, la lectura de avisos y
-la visualizacion de recursos.
+Para ello lo hemos dividido en dos grupos: accion, donde se almacenan entregas de tareas, cuestionarios y foros, y lectura, donde se almacenan consultas de materiales, avisos y visualizacion de recursos.
 
-Como podemos observar en el grafico \ref{fig:accion-lectura} la lectura
-domina sin duda la mayor parte de los registros, este dato nos hace
-comprobar que el aula virtual se usa mayoritariamente para la consulta
-de tareas y como un centro de estudio previo. La accion representa, como
-veemos en la tabla \ref{tab:tab:lectores} un porcentaje bastante menor.
-Esto no indica falta de interes, sino que el usuario necesita
-interactuar mas veces con el material y hacer una visualizacion de este
-para poder realizar la tarea que posteriormente hay que entregar.
+Como podemos observar en el grafico \ref{fig:accion-lectura}, la lectura tiene el mayor peso, lo que nos hace comprobar que el aula virtual se usa sobre todo para consultar materiales y estudiar. La accion representa un porcentaje bastante menor, pero esto no indica falta de interes, sino que el usuario necesita consultar varias veces el material antes de realizar la entrega.
 
-En definitiva, los usuarios utilizamos el aula virtual mayoritariamente
-como una biblioteca. Entramos mucho para consultar apuntes o avisos,
-pero una sola vez para entregar la tarea, lo que nos hace comprender que
-eso es un comportamiento muy normal y que realizamos mucho estudio y un
-clic final para el envio.
+En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una biblioteca: entramos muchas veces para consultar apuntes o avisos, pero normalmente solo una vez para entregar la tarea.
 
 ## PREGUNTA 5
 
@@ -412,29 +357,10 @@ comunicacion_vs_recursos <- logs %>%filter(Componente %in% c("Foro", "Mensajes",
 ggplot(comunicacion_vs_recursos, aes(x = Componente, y = n, fill = Componente)) +geom_col(fill = "lavender", color = "white") + labs(title = "Uso de Comunicación vs Recursos",x = "Componente",y = "Número de interacciones") +theme_minimal() +theme(legend.position = "none")
 ```
 
-Si analizamos la figura \ref{fig:fig-comunicacion} que compara el uso de
-los distintos componentes, se hace evidente una gran diferencia entre el
-acceso a materiales y la interacción social. Predomina, de manera casi
-exclusiva, el uso de las carpetas de contenidos frente a la
-participación en foros. Esta diferencia sugiere que el alumnado percibe
-el aula virtual como una herramienta de consulta y descarga de
-documentación más que como un espacio de debate o intercambio
-comunicativo.
+Si analizamos la figura \ref{fig:fig-comunicacion} que compara el uso de distintos componentes, se hace evidente una gran diferencia entre el acceso a materiales y la interacción social. Predomina, de manera casi exclusiva, el uso de las carpetas de contenidos frente a la participación en foros. Esto sugiere que el alumnado percibe el aula virtual como una herramienta de consulta y descarga, no como espacio de debate.
+Los datos cuantitativos muestran que "Carpeta" registra más de 3.000 interacciones, mientras que "Foro" tiene una actividad mínima. Porcentualmente, el acceso a recursos supone casi la totalidad de las acciones, dejando la comunicación en un segundo plano muy alejado.
+En conclusión, el aula virtual funciona esencialmente como un almacén de archivos. No hay hábito de interacción dentro del sistema; los usuarios se concentran en gestionar el contenido e ignoran las herramientas de comunicación disponibles.
 
-Al observar los datos cuantitativos, vemos que el componente "Carpeta"
-registra más de 3.000 interacciones, mientras que el "Foro" presenta una
-actividad mínima en comparación. Si establecemos una comparativa
-porcentual, el acceso a recursos supone prácticamente la totalidad de
-las acciones analizadas en esta categoría, dejando la comunicación en un
-segundo plano muy alejado. Esto confirma que la utilidad principal de la
-plataforma para los usuarios es la obtención de materiales para el
-estudio personal.
-
-Como conclusión, los datos reflejan que el aula virtual funciona
-esencialmente como un almacén de archivos. No existe un hábito de
-interaccion dentro del sistema, ya que los usuarios concentran sus
-esfuerzos en gestionar el contenido, ignorando las herramientas de
-comunicación disponibles.
 
 ## PREGUNTA 7
 

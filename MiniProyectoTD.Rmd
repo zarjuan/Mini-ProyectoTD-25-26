@@ -681,7 +681,7 @@ En conclusión, sí es posible clasificar a los alumnos por su nivel de asistenc
 
 *¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
 
-```{r, tareas-segun-asistencia, fig.width=5, fig.height=3}
+```{r, tareas-segun-asistencia}
 
 
 # Contamos las entregas de tareas por alumno
@@ -751,5 +751,7 @@ En la figura anterior se observa una clara relación positiva entre el nivel de 
 Los alumnos con **asistencia alta (≥75%)** son los que más tareas entregan, con una media de aproximadamente X tareas por alumno. Por el contrario, los alumnos con **asistencia muy baja (\<25%)** presentan una media notablemente inferior (cerca de Y tareas), y un mayor número de alumnos que no entregan prácticamente ninguna tarea. Pero este grupo es el que más variedad posee, en cambio el de **asistencia alta (≥75%)** es mucho menos variable, es más normal entregarlo todo.
 
 Esto confirma que los alumnos que no asisten regularmente también tienden a entregar menos tareas, lo que sugiere una correlación entre el compromiso con la asignatura (medido por la asistencia) y el rendimiento en las actividades evaluables.
+
+Además como se aprecia en los outlidershay casos de gente que firma asistencia **baja(25% -49%)**, pero apenas sube nada. Al mismo tiempo hay alumnos con **asistencia muy baja (\<25%)** que entregan más cosas que alumnos con asistencia **baja(25% -49%)** y **media(50%-74%)**
 
 **Conclusión**: Sí existe una relación clara. Los alumnos con baja asistencia son también los menos activos en la entrega de tareas.

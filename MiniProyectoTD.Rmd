@@ -7,16 +7,16 @@ author:
 date: "`r Sys.Date()`"
 subtitle: "Tratamiento de los Datos. Grado en Ciencia de Datos- UV"
 output:
-  bookdown::html_document2:
-    toc: true
-    number_sections: true
-    theme: spacelab
-    lang: es
   bookdown::pdf_document2:
     toc: true
     toc_depth: 3
     number_sections: true
     lang: spanish
+  bookdown::html_document2:
+    toc: true
+    number_sections: true
+    theme: spacelab
+    lang: es
 always_allow_html: true
 babel-lang: spanish
 babel-otherlangs: english
@@ -404,6 +404,7 @@ administradores <- logs %>%
   )) %>%
   distinct(Nombre.completo.del.usuario) %>%
   mutate(rol = "Administrador")
+roles_todos <- bind_rows(alumnos, profesores, administradores)
 
 # Usuarios con más de un rol
 conflictos_roles <- roles_todos %>%

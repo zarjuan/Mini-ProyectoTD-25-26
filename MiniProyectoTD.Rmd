@@ -33,6 +33,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introducción
 
+
 En este trabajo, se realiza un Análisis Exploratorio de Datos (EDA)
 usando un conjunto de registros de actividad de la plataforma educativa
 Aula Virtual. Este tipo de datos recoge información detallada sobre las
@@ -101,6 +102,22 @@ participar)?
 
 ¿Existen usuarios con comportamientos atípicos en la plataforma? 
 
+
+En este trabajo tenemos como objetivo realizar un analisis sobre la interaccion de los usuarios con el aula virtual. Para ello, partimos de una base de datos la cual usaremos para extraer las conclusiones necesarias y responder a las preguntas propuestas.
+
+Preguntas:
+
+En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el aula virtual y cuánto cae el uso el sábado y el domingo?
+
+En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas), ¿quién interactúa más con esa sección proporcionalmente a su grupo?
+
+En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
+
+En cuanto a deducción de perfiles: Cuando vemos mucha actividad en "Tareas", ¿podemos saber cuántos son profesores solo por cómo se mueven por el resto de la web, o es imposible distinguirlos de los alumnos?
+
+¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
+
+
 # Importación
 
 ```{r}
@@ -126,11 +143,16 @@ ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+
   theme_minimal()
 ```
 
+
+En la Figura \@ref(fig:fig1) se puede ver de forma muy clara cómo se reparte el uso del aula virtual. Lo que más llama la atención es que la actividad no es equilibrada: el componente "Sistema" tiene la barra más alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un usuario entra o se mueve por las secciones, el sistema lo registra.
+
+
 En la Figura \@ref(fig:fig1) se puede ver de forma muy clara cómo se
 reparte el uso del aula virtual. Lo que más llama la atención es que la
 actividad no es equilibrada: el componente "Sistema" tiene la barra más
 alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un
 usuario entra o se mueve por las secciones, el sistema lo registra.
+
 
 Después de la navegación básica, lo que más movimiento genera son las
 "Tareas" y los "Cuestionarios". Sus barras son altas porque son las
@@ -138,6 +160,7 @@ herramientas que los alumnos usan para trabajar y examinarse. Por el
 contrario, el resto de componentes (como "Carpeta" o "Asistencia")
 tienen barras muy pequeñas, lo que indica que se usan de forma mucho más
 específica o menos frecuente.
+
 
 # Tabla
 
@@ -173,6 +196,7 @@ cierta presencia dentro del uso habitual de la plataforma. Finalmente,
 hay otros componentes con valores muy bajos, lo que indica que su uso es
 mucho más limitado o puntual.
 
+
 La tabla permite ver de forma más detallada cómo se reparte la actividad
 entre los distintos componentes y confirmar lo que ya se observaba en la
 gráfica, que la mayoría de interacciones se concentran en unos pocos
@@ -181,6 +205,13 @@ elementos principales del aula virtual
 # Preguntas y respuestas
 
 ## PREGUNTA 1
+
+# Preguntas y respuestas
+
+## PREGUNTA 1
+
+En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el aula virtual y cuánto cae el uso el sábado y el domingo?
+
 
 En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el
 aula virtual y cuánto cae el uso el sábado y el domingo?
@@ -212,6 +243,10 @@ ggplot(logs_semanal, aes(x = Dia_Semana, y = Total_Eventos, fill = Dia_Semana)) 
 
 ```
 
+
+Mirando la grafica \@ref(fig:fig2) podemos observar la distribucion de la actividad durante la semana. Podemos ver, que, evidentemente, los dias de la semana con mas peso son los dias lectivos, lo que sugiere que los usuarios acceden con mayor frecuencia entre semana para la consulta de materiales para poder realizar tanto sus practicas como sus actividades en las horas lectivas. Observamos, que entre los dias de mas frecuencia, que son los lunes, martes, miercoles, jueves y viernes, hay dias mas frecuentados que otros. Por ejemplo el lunes es el dia que menos se consulta, no como el miercoles que es el que mas.
+
+
 Mirando la grafica \@ref(fig:fig2) podemos observar la distribucion de
 la actividad durante la semana. Podemos ver, que, evidentemente, los
 dias de la semana con mas peso son los dias lectivos, lo que sugiere que
@@ -232,6 +267,7 @@ poco mas, con aproximadamente 7.000 registros. Con esto podemos
 comprobar que los usuarios priorizan los tiempos de descanso durante los
 dias no lectivos.
 
+
 En conclusion, podemos decir que el comportamiento de los usuarios es
 ciclico, es decir, existe una curva que empieza fuerte el lunes pero que
 decae cuando llega el fin de semana, siendo el sabado el dia de menor
@@ -242,6 +278,55 @@ interaccion.
 En cuanto al comportamiento del usuario (Sistema): El apartado que más
 se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se
 queda mucho tiempo navegando por todo el curso?
+
+## PREGUNTA 3
+
+En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas). ¿Quién interactúa más con esa sección proporcionalmente a su grupo?
+
+```{r}
+library(dplyr)
+library(ggplot2)
+#filtramos los registros relacionados con las notas
+notas <- logs %>%
+  filter(grepl("calific|grade|nota", Nombre.evento, ignore.case = TRUE) |
+           grepl("calific|grade|nota", Componente, ignore.case = TRUE))
+
+#clasificamos las acciones entre alumnos y profesores
+notas_roles <- notas %>%
+  mutate(Rol = ifelse(grepl("actualizado|creado|modificado|graded", 
+                            Nombre.evento, ignore.case = TRUE),
+                      "Profesorado",
+                      "Alumnado")) %>%
+  count(Rol) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 1))
+
+#creamos el grafico de barras
+ggplot(notas_roles, aes(x = Rol, y = Porcentaje, fill = Rol)) +
+  geom_col(width = 0.5, show.legend = FALSE) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            vjust = -0.31,
+            size = 4) + 
+  geom_col(width = 0.5, show.legend = FALSE) +
+  scale_fill_manual(values = c("Alumnado" = "turquoise",
+                               "Profesorado" = "lightpink")) +
+  labs(title = "Interacción con la sección de notas",
+       subtitle = "Comparación proporcional entre alumnado y profesorado",
+       x = "Grupo de usuarios",
+       y = "Porcentaje de interacciones") +theme_minimal()
+
+
+```
+
+Para responder a esta pregunta hemos analizado los registros relacionados con la sección de notas del aula virtual. Para ello, primero filtramos aquellos eventos cuyo nombre o componente estuviera relacionado con calificaciones o notas para poder clasificar esas interacciones entre alumnado y profesorado.
+
+En la figura se observa claramente que el alumnado concentra la mayor parte de las interacciones con la sección de notas. Esto tiene bastante sentido, ya que los estudiantes consultan las calificaciones con mucha más frecuencia para revisar resultados. Por el contrario, el profesorado únicamente accede cuando necesita introducir o modificar calificaciones, lo que genera un volumen de eventos mucho menor. No obstante, se puede decir que el mayor motivo por el cual el alumnado ha acumulado un mayor número de interacciones es que en total son muchos más usuarios totales del aula vitual en comparación con los docentes que son muchos menos.
+
+En conclusión, quienes interactúan más con la sección de notas son los alumnos, ya que acceden de forma recurrente para consultar información académica y conforman la mayor parte de los usuarios del aula virtual mientras que el profesorado realiza un uso más reducido y específico centrado en la gestión de calificaciones.
+
+## PREGUNTA 4
+
+En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
+
 
 ```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema"}
 library(tidyverse)
@@ -262,6 +347,9 @@ ggplot(logs_sistema, aes(x = Dif_Minutos)) +
        y = "Frecuencia")
 ```
 
+
+Mirando la gráfica \@ref(fig:fig3) podemos observar cómo se distribuye el tiempo que pasa entre una acción y otra dentro del componente 'Sistema'. Se ve claramente que el comportamiento principal es el de "entrar y salir", es decir, realizar consultas muy rápidas. Esto se nota porque la mayor parte de las acciones se concentran en el primer intervalo, específicamente entre los 0 y 1 minuto, donde se superan los 5.000 registros de frecuencia.
+
 Mirando la gráfica \@ref(fig:fig3) podemos observar cómo se distribuye
 el tiempo que pasa entre una acción y otra dentro del componente
 'Sistema'. Se ve claramente que el comportamiento principal es el de
@@ -279,6 +367,7 @@ existe una navegación duradera, sino que los usuarios acceden para
 realizar tareas breves y concretas, terminando su actividad en muy poco
 tiempo.
 
+
 En conclusión, podemos decir que el uso del sistema se basa en
 interacciones de corta duración. La gráfica presenta una curva de
 descenso rápido, lo que confirma que la gran mayoría de las sesiones
@@ -288,9 +377,15 @@ minutos.
 
 ## PREGUNTA 5
 
+## PREGUNTA 5
+
+¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
+
+
 ¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos)
 comparado con los que realmente "hacen" algo (subir tareas o
 participar)?
+
 
 Para resolver esta pregunta, realizaremos tanto un grafico pie como una
 tabla, para que los porcentajes queden mas claros y poder responder mas
@@ -337,6 +432,12 @@ Esto lo hemos decidido encasillar en dos grandes grupos, en accion donde
 se almacenan la entrega de tareas, cuestionarios y foros y en lectura,
 donde se almacenan las consultas de materiales, la lectura de avisos y
 la visualizacion de recursos.
+
+
+Para poder profundizar en el comportamiento de los usuarios una vez entran en el aula virtual, hemos usado la figura \@ref(fig:accion-lectura) para comprobar la proporcion entre el consumo de contenidos y la participacion directa mediante subida de tareas o realizacion de cuestionarios.\
+Esto lo hemos decidido encasillar en dos grandes grupos, en accion donde se almacenan la entrega de tareas, cuestionarios y foros y en lectura, donde se almacenan las consultas de materiales, la lectura de avisos y la visualizacion de recursos.
+
+Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura domina sin duda la mayor parte de los registros, este dato nos hace comprobar que el aula virtual se usa mayoritariamente para la consulta de tareas y como un centro de estudio previo. La accion representa, como veemos en la tabla \@ref(tab:tabla-lectores-participantes) un porcentaje bastante menor. Esto no indica falta de interes, sino que el usuario necesita interactuar mas veces con el material y hacer una visualizacion de este para poder realizar la tarea que posteriormente hay que entregar.
 
 Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura
 domina sin duda la mayor parte de los registros, este dato nos hace
@@ -409,7 +510,6 @@ general en términos de cantidad de eventos registrados.
 df_frecuencia_componentes <- as.data.frame(table(logs$Componente))
 colnames(df_frecuencia_componentes) <- c("Componente", "Frecuencia")
 
-
 knitr::kable(df_frecuencia_componentes, 
              caption = "Frecuencia de uso por componentes del aula virtual", 
              booktabs = TRUE)
@@ -452,6 +552,11 @@ accesibilidad de los componentes.
 del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo
 como un almacén de archivos?
 
+## PREGUNTA 7
+
+¿Qué peso tiene la comunicación (Foros y Mensajes) dentro del uso total del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo como un almacén de archivos?
+
+
 ```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros"}
 library(ggplot2)
 library(dplyr)
@@ -492,3 +597,9 @@ esencialmente como un almacén de archivos. No existe un hábito de
 interaccion dentro del sistema, ya que los usuarios concentran sus
 esfuerzos en gestionar el contenido, ignorando las herramientas de
 comunicación disponibles.
+
+Si analizamos la figura \@ref(fig:fig-comunicacion) que compara el uso de los distintos componentes, se hace evidente una gran diferencia entre el acceso a materiales y la interacción social. Predomina, de manera casi exclusiva, el uso de las carpetas de contenidos frente a la participación en foros. Esta diferencia sugiere que el alumnado percibe el aula virtual como una herramienta de consulta y descarga de documentación más que como un espacio de debate o intercambio comunicativo.
+
+Al observar los datos cuantitativos, vemos que el componente "Carpeta" registra más de 3.000 interacciones, mientras que el "Foro" presenta una actividad mínima en comparación. Si establecemos una comparativa porcentual, el acceso a recursos supone prácticamente la totalidad de las acciones analizadas en esta categoría, dejando la comunicación en un segundo plano muy alejado. Esto confirma que la utilidad principal de la plataforma para los usuarios es la obtención de materiales para el estudio personal.
+
+Como conclusión, los datos reflejan que el aula virtual funciona esencialmente como un almacén de archivos. No existe un hábito de interaccion dentro del sistema, ya que los usuarios concentran sus esfuerzos en gestionar el contenido, ignorando las herramientas de comunicación disponibles.

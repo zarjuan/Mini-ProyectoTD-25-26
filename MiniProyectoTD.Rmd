@@ -1,5 +1,4 @@
 ---
-tinytex::pdflatex()---
 title: "Miniproyecto Tratamiento de los datos"
 author: 
   - "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres,"
@@ -12,17 +11,14 @@ output:
     toc: true
     toc_depth: 3
     number_sections: true
-    lang: spanish
+    fig_crop: false
   bookdown::html_document2:
     toc: true
     number_sections: true
     theme: spacelab
-    lang: es
 always_allow_html: true
-babel-lang: spanish
-babel-otherlangs: english
-lang: es
-mainfont: 
+header-includes:
+  - \usepackage{float}
 ---
 
 ```{r setup, include=FALSE}
@@ -61,7 +57,7 @@ logs <- read.csv("data/logs_moodle_anon.csv")
 
 # Figura
 
-```{r fig1, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual", fig.width=5, fig.height=3}
+```{r fig1, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual", fig.width=5, fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
 
 resumen_datos<- logs %>% 
   count(Componente) %>% 
@@ -104,7 +100,7 @@ En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el aula 
 
 Para poder responder correctamente la pregunta en relacion con la actividad semanal, mediante un ggplot, comprobaremos el apartado fecha de nuestro data frame para poder sacar conclusiones adecuadas.
 
-```{r fig2, fig.cap="Actividad semanal en el aula virtual", fig.width=5, fig.height=3}
+```{r fig2, fig.cap="Actividad semanal en el aula virtual", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 #primero cargamos las librerias que consideramos necesarias para poder crear una tabla que nos compare la actividad en el aula virtual cada dia
 
 
@@ -135,7 +131,7 @@ En conclusion, podemos decir que el comportamiento de los usuarios es ciclico, e
 
 En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas). ¿Quién interactúa más con esa sección proporcionalmente a su grupo?
 
-```{r, fig.width=5, fig.height=3}
+```{r, fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 
 #filtramos los registros relacionados con las notas
 notas <- logs %>%
@@ -178,7 +174,7 @@ En conclusión, quienes interactúan más con la sección de notas son los alumn
 
 En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
 
-```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema", fig.width=5, fig.height=3}
+```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 
 
 logs_sistema <- logs %>%
@@ -208,7 +204,7 @@ En conclusión, podemos decir que el uso del sistema se basa en interacciones de
 
 Para resolver esta pregunta, realizaremos tanto un grafico pie como una tabla, para que los porcentajes queden mas claros y poder responder mas claramente a la pregunta
 
-```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos", fig.width=5, fig.height=3}
+```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 
 
 #primero agrupamos los registros pasivos y los registros activos
@@ -251,7 +247,7 @@ En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una
 
 Para resolver esta cuestión, se utlizará un boxplot para ver loscomportamientos atípicos(outliers) que serán los valores que estén fuera de la caja del boxplot.
 
-```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual", fig.width=5, fig.height=3}
+```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 
 
 
@@ -308,7 +304,7 @@ La identificación de estos comportamientos atípicos es importante, ya que pued
 
 ¿Qué peso tiene la comunicación (Foros y Mensajes) dentro del uso total del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo como un almacén de archivos?
 
-```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros", fig.width=5, fig.height=3}
+```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 
 
 comunicacion_vs_recursos <- logs %>%
@@ -442,7 +438,7 @@ tabla_conflictos <- logs %>%
   ))
 
 # Mostrar tabla
-tabla_conflictos
+head(tabla_conflictos)
 
 # Total actividades por usuario
 tabla_conflictos %>%
@@ -470,7 +466,7 @@ Ahora sí que sí, que ya no hay casos raros podemos analizar los datos que hemo
 # Unimos todo
 roles_todos <- bind_rows(alumnos, profesores, administradores)
 
-roles_todos
+head(roles_todos)
 ```
 
 Aquí se queda fuera muchos usuarios, dado a que solo tienen la actividad de `Usuario calificado`, o demasiada poca actividad como para ser relevante. Hay varios que se han quedado fuera que es probable que sean observadores.
@@ -479,7 +475,7 @@ Es muy probable que `U0001` sea un bot, porque `Usuario calificado` es la única
 
 Otro caso especial es `U0002`, que es administrador, dado a que creó el curso. Y cuadra con lo anterior, tiene sentido que el primer usuario sea el bot, y el segundo quien creo y designo roles en el curso
 
-```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol", fig.width=5, fig.height=3}
+```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
 
 ggplot(roles_todos, aes(x = rol, fill = rol)) +
   geom_bar() +
@@ -500,7 +496,7 @@ En respuesta a la pregunta inicial, es complicado distinguir entre profesores, a
 
 Para resolver esta cuestión se va a realizar utilizaremos **dos mapas de calor**. *¿Por qué un heatmap?* La pregunta tiene dos dimensiones simultáneas (hora del día × día de la semana) más la separación por rol. Un `heatmap` con `facet_wrap` permite ver de un vistazo en qué celdas se concentra la actividad, algo que sería muy difícil de leer con barras agrupadas.
 
-```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3}
+```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
 
 
 
@@ -617,25 +613,25 @@ asistencia_alumno <- alumnos %>%
 asistencia_alumno <- asistencia_alumno %>%
   mutate(
     Nivel = case_when(
-      Pct_Asistencia >= 75 ~ "Alta (≥75%)",
+      Pct_Asistencia >= 75 ~ "Alta (>=75%)",
       Pct_Asistencia >= 50 ~ "Media (50–74%)",
       Pct_Asistencia >= 25 ~ "Baja (25–49%)",
       TRUE                 ~ "Muy baja (<25%)"
     ),
-    Nivel = factor(Nivel, levels = c("Alta (≥75%)", "Media (50–74%)",
+    Nivel = factor(Nivel, levels = c("Alta (>=75%)", "Media (50–74%)",
                                      "Baja (25–49%)", "Muy baja (<25%)"))
   )
 ```
 
 Ahora que tenemos todo listo, vamos a hacer las tablas:
 
-```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3}
+```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
 ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
   geom_histogram(binwidth = 5, color = "white") +
   geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",
              color = "grey40", linewidth = 0.7) +
   scale_fill_manual(values = c(
-    "Alta (≥75%)"     = "steelblue",
+    "Alta (>=75%)"     = "steelblue",
     "Media (50–74%)"  = "lightblue",
     "Baja (25–49%)"   = "lightyellow",
     "Muy baja (<25%)" = "lightsalmon"
@@ -650,14 +646,14 @@ ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
   theme_minimal()
 ```
 
-```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia", fig.width=5, fig.height=3}
+```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
 resumen_niveles <- asistencia_alumno %>% count(Nivel)
 
 ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +
   geom_col(show.legend = FALSE, width = 0.6) +
   geom_text(aes(label = n), vjust = -0.4, size = 4) +
   scale_fill_manual(values = c(
-    "Alta (≥75%)"     = "steelblue",
+    "Alta (>=75%)"     = "steelblue",
     "Media (50–74%)"  = "lightblue",
     "Baja (25–49%)"   = "lightyellow",
     "Muy baja (<25%)" = "lightsalmon"
@@ -674,7 +670,7 @@ Para analizar la regularidad en la firma de asistencia online, se filtraron los 
 
 El histograma muestra una distribución claramente **polarizada**: hay un grupo numeroso de alumnos con asistencia muy alta (por encima del 75%), pero también un grupo considerable con asistencia baja o muy baja, con pocos alumnos en la franja intermedia. Esto sugiere que no existe un comportamiento uniforme: los alumnos tienden a ser o muy regulares o muy irregulares, sin término medio.
 
-La clasificación por niveles confirma esta tendencia. El grupo de asistencia **Alta (≥75%)** es el más numeroso, lo que indica que la mayoría del alumnado sí firma de forma consistente. Sin embargo, el peso del grupo de asistencia **Muy baja (\<25%)** no es despreciable, e identifica a alumnos que prácticamente no participan en el control de asistencia online.
+La clasificación por niveles confirma esta tendencia. El grupo de asistencia **Alta (>=75%)** es el más numeroso, lo que indica que la mayoría del alumnado sí firma de forma consistente. Sin embargo, el peso del grupo de asistencia **Muy baja (\<25%)** no es despreciable, e identifica a alumnos que prácticamente no participan en el control de asistencia online.
 
 En conclusión, sí es posible clasificar a los alumnos por su nivel de asistencia, y esta segmentación resulta útil para detectar perfiles de riesgo académico dentro del curso.
 
@@ -682,9 +678,7 @@ En conclusión, sí es posible clasificar a los alumnos por su nivel de asistenc
 
 *¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
 
-```{r, tareas-segun-asistencia}
-
-
+```{r, tareas-segun-asistencia, fig.align='center', fig.pos='H', out.extra=''}
 # Contamos las entregas de tareas por alumno
 entregas <- logs %>%
   filter(Nombre.evento == "Se ha enviado una entrega") %>%
@@ -714,7 +708,7 @@ ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel))
   geom_boxplot(alpha = 0.8, outlier.shape = 16, outlier.size = 2) +
   geom_jitter(width = 0.2, alpha = 0.3, size = 1.5) +
   scale_fill_manual(values = c(
-    "Alta (≥75%)"     = "steelblue",
+    "Alta (>=75%)"     = "steelblue",
     "Media (50–74%)"  = "lightblue",
     "Baja (25–49%)"   = "lightyellow",
     "Muy baja (<25%)" = "lightsalmon"
@@ -727,13 +721,16 @@ ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel))
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 15, hjust = 1))
+```
 
+
+```{r, fig-segun-asistencia, fig.align='center', fig.pos='H', out.extra='',fig.width=5, fig.height=3,}
 # Gráfico de barras
 ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +
   geom_col(width = 0.7, alpha = 0.9) +
   geom_text(aes(label = Media_Tareas), vjust = -0.4, size = 4.5, fontface = "bold") +
   scale_fill_manual(values = c(
-    "Alta (≥75%)"     = "steelblue",
+    "Alta (>=75%)"     = "steelblue",
     "Media (50–74%)"  = "lightblue",
     "Baja (25–49%)"   = "lightyellow",
     "Muy baja (<25%)" = "lightsalmon"
@@ -744,12 +741,12 @@ ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +
     y = "Media de tareas entregadas"
   ) +
   theme_minimal()
-
 ```
+
 
 En la figura anterior se observa una clara relación positiva entre el nivel de asistencia y el número de tareas entregadas.
 
-Los alumnos con **asistencia alta (≥75%)** son los que más tareas entregan, con una media de aproximadamente X tareas por alumno. Por el contrario, los alumnos con **asistencia muy baja (\<25%)** presentan una media notablemente inferior (cerca de Y tareas), y un mayor número de alumnos que no entregan prácticamente ninguna tarea. Pero este grupo es el que más variedad posee, en cambio el de **asistencia alta (≥75%)** es mucho menos variable, es más normal entregarlo todo.
+Los alumnos con **asistencia alta (>=75%)** son los que más tareas entregan, con una media de aproximadamente X tareas por alumno. Por el contrario, los alumnos con **asistencia muy baja (\<25%)** presentan una media notablemente inferior (cerca de Y tareas), y un mayor número de alumnos que no entregan prácticamente ninguna tarea. Pero este grupo es el que más variedad posee, en cambio el de **asistencia alta (>=75%)** es mucho menos variable, es más normal entregarlo todo.
 
 Esto confirma que los alumnos que no asisten regularmente también tienden a entregar menos tareas, lo que sugiere una correlación entre el compromiso con la asignatura (medido por la asistencia) y el rendimiento en las actividades evaluables.
 

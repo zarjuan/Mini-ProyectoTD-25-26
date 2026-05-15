@@ -127,7 +127,7 @@ Respecto al fin de semana, se nota una caida significativa. Si comparamos un dia
 
 En conclusion, podemos decir que el comportamiento de los usuarios es ciclico, es decir, existe una curva que empieza fuerte el lunes pero que decae cuando llega el fin de semana, siendo el sabado el dia de menor interaccion.
 
-## PREGUNTA 3
+## PREGUNTA 2
 
 En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas). ¿Quién interactúa más con esa sección proporcionalmente a su grupo?
 
@@ -171,7 +171,7 @@ En la figura se observa claramente que el alumnado concentra la mayor parte de l
 
 En conclusión, quienes interactúan más con la sección de notas son los alumnos, ya que acceden de forma recurrente para consultar información académica y conforman la mayor parte de los usuarios del aula virtual mientras que el profesorado realiza un uso más reducido y específico centrado en la gestión de calificaciones.
 
-## PREGUNTA 4
+## PREGUNTA 3
 
 En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
 
@@ -200,7 +200,7 @@ A medida que aumenta el tiempo en el eje horizontal, observamos que la frecuenci
 
 En conclusión, podemos decir que el uso del sistema se basa en interacciones de corta duración. La gráfica presenta una curva de descenso rápido, lo que confirma que la gran mayoría de las sesiones duran apenas unos segundos y que son muy pocos los casos en los que los usuarios mantienen una actividad continuada más allá de los dos o tres minutos.
 
-## PREGUNTA 5
+## PREGUNTA 4
 
 ¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
 
@@ -245,7 +245,7 @@ Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura domina 
 
 En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una biblioteca. Entramos mucho para consultar apuntes o avisos, pero una sola vez para entregar la tarea, lo que nos hace comprender que eso es un comportamiento muy normal y que realizamos mucho estudio y un clic final para el envio.
 
-## PREGUNTA 6
+## PREGUNTA 5
 
 ¿Existen usuarios con comportamientos atípicos en la plataforma?
 
@@ -305,7 +305,7 @@ Por otro lado, componentes como Participación en el curso (con solo 1 registro)
 
 La identificación de estos comportamientos atípicos es importante, ya que puede indicarnos áreas en las que los recursos de la plataforma no están siendo aprovechados adecuadamente, o incluso señalar que algunos usuarios tienen un nivel de interacción significativamente más alto o bajo que el resto, lo que puede ayudar a mejorar la distribución y accesibilidad de los componentes.
 
-## PREGUNTA 7
+## PREGUNTA 6
 
 ¿Qué peso tiene la comunicación (Foros y Mensajes) dentro del uso total del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo como un almacén de archivos?
 
@@ -332,7 +332,7 @@ Al observar los datos cuantitativos, vemos que el componente "Carpeta" registra 
 
 Como conclusión, los datos reflejan que el aula virtual funciona esencialmente como un almacén de archivos. No existe un hábito de interaccion dentro del sistema, ya que los usuarios concentran sus esfuerzos en gestionar el contenido, ignorando las herramientas de comunicación disponibles.
 
-## PREGUNTA 9
+## PREGUNTA 7
 
 *¿Se puede diferenciar entre **alumnos**, **profesores** y **administradores**?*
 
@@ -406,15 +406,17 @@ administradores <- logs %>%
   mutate(rol = "Administrador")
 roles_todos <- bind_rows(alumnos, profesores, administradores)
 
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+
 # Usuarios con más de un rol
-conflictos_roles <- roles_todos %>%
+conflictos <- roles_todos %>%
   group_by(Nombre.completo.del.usuario) %>%
   summarise(roles = paste(sort(unique(rol)), collapse = " + "),
             n_roles = n_distinct(rol)) %>%
   filter(n_roles > 1) %>%
   arrange(desc(n_roles))
 
-print(conflictos_roles)
+print(conflictos)
 ```
 
 Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles. Vamos a comprobar que actividades han realizado para analizar qué criterios están fallando
@@ -494,7 +496,7 @@ ggplot(roles_todos, aes(x = rol, fill = rol)) +
 
 En respuesta a la pregunta inicial, es complicado distinguir entre profesores, alumnos y administradores. Pero acotandose a unos criterios se puede trabajar un poco con esos datos, como las preguntas que se van a realizar a continuación.
 
-## PREGUNTA 10
+## PREGUNTA 8
 
 *¿A qué hora del día se entra más al aula virtual los **alumnos** y los **profesores** según el día de la semana?*
 
@@ -568,7 +570,7 @@ Igualmente, se sigue reflejando la mayor actividad los **miércoles** y los **vi
 
 En conclusión, ambos grupos siguen un patrón marcadamente laboral/académico: el uso del aula virtual sigue los ritmos del horario escolar y las franjas horarias diurnas en el caso de los profesores, siendo el alumnado quien genera la mayor parte del tráfico, especialmente en las horas de tarde-noche
 
-## PREGUNTA 11
+## PREGUNTA 9
 
 *¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
 
@@ -683,7 +685,7 @@ La clasificación por niveles confirma esta tendencia. El grupo de asistencia **
 
 En conclusión, sí es posible clasificar a los alumnos por su nivel de asistencia, y esta segmentación resulta útil para detectar perfiles de riesgo académico dentro del curso.
 
-## PREGUNTA 12
+## PREGUNTA 10
 
 *¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
 

@@ -1,4 +1,5 @@
 ---
+tinytex::pdflatex()---
 title: "Miniproyecto Tratamiento de los datos"
 author: 
   - "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres,"

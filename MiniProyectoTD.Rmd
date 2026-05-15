@@ -54,7 +54,7 @@ logs <- read.csv("data/logs_moodle_anon.csv")
 
 # Figura
 
-```{r fig1, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual"}
+```{r fig1, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual", fig.width=5, fig.height=3}
 library(ggplot2)
 library(dplyr)
 resumen_datos<- logs %>% 
@@ -98,7 +98,7 @@ En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el aula 
 
 Para poder responder correctamente la pregunta en relacion con la actividad semanal, mediante un ggplot, comprobaremos el apartado fecha de nuestro data frame para poder sacar conclusiones adecuadas.
 
-```{r fig2, fig.cap="Actividad semanal en el aula virtual"}
+```{r fig2, fig.cap="Actividad semanal en el aula virtual", fig.width=5, fig.height=3}
 #primero cargamos las librerias que consideramos necesarias para poder crear una tabla que nos compare la actividad en el aula virtual cada dia
 library(dplyr)
 library(ggplot2)
@@ -131,7 +131,7 @@ En conclusion, podemos decir que el comportamiento de los usuarios es ciclico, e
 
 En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas). ¿Quién interactúa más con esa sección proporcionalmente a su grupo?
 
-```{r}
+```{r, fig.width=5, fig.height=3}
 library(dplyr)
 library(ggplot2)
 #filtramos los registros relacionados con las notas
@@ -175,7 +175,7 @@ En conclusión, quienes interactúan más con la sección de notas son los alumn
 
 En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
 
-```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema"}
+```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema", fig.width=5, fig.height=3}
 library(tidyverse)
 library(lubridate)
 
@@ -206,7 +206,7 @@ En conclusión, podemos decir que el uso del sistema se basa en interacciones de
 
 Para resolver esta pregunta, realizaremos tanto un grafico pie como una tabla, para que los porcentajes queden mas claros y poder responder mas claramente a la pregunta
 
-```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos"}
+```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos", fig.width=5, fig.height=3}
 library(dplyr)
 library(ggplot2)
 library(knitr)
@@ -251,7 +251,7 @@ En definitiva, los usuarios utilizamos el aula virtual mayoritariamente como una
 
 Para resolver esta cuestión, se utlizará un boxplot para ver loscomportamientos atípicos(outliers) que serán los valores que estén fuera de la caja del boxplot.
 
-```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual"}
+```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual", fig.width=5, fig.height=3}
 
 library(ggplot2)
 library(dplyr)
@@ -309,7 +309,7 @@ La identificación de estos comportamientos atípicos es importante, ya que pued
 
 ¿Qué peso tiene la comunicación (Foros y Mensajes) dentro del uso total del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo como un almacén de archivos?
 
-```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros"}
+```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros", fig.width=5, fig.height=3}
 library(ggplot2)
 library(dplyr)
 
@@ -478,7 +478,7 @@ Es muy probable que `U0001` sea un bot, porque `Usuario calificado` es la única
 
 Otro caso especial es `U0002`, que es administrador, dado a que creó el curso. Y cuadra con lo anterior, tiene sentido que el primer usuario sea el bot, y el segundo quien creo y designo roles en el curso
 
-```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol"}
+```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol", fig.width=5, fig.height=3}
 
 ggplot(roles_todos, aes(x = rol, fill = rol)) +
   geom_bar() +
@@ -499,7 +499,7 @@ En respuesta a la pregunta inicial, es complicado distinguir entre profesores, a
 
 Para resolver esta cuestión se va a realizar utilizaremos **dos mapas de calor**. *¿Por qué un heatmap?* La pregunta tiene dos dimensiones simultáneas (hora del día × día de la semana) más la separación por rol. Un `heatmap` con `facet_wrap` permite ver de un vistazo en qué celdas se concentra la actividad, algo que sería muy difícil de leer con barras agrupadas.
 
-```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual"}
+```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3}
 library(dplyr)
 library(ggplot2)
 library(lubridate)
@@ -633,7 +633,7 @@ asistencia_alumno <- asistencia_alumno %>%
 
 Ahora que tenemos todo listo, vamos a hacer las tablas:
 
-```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual"}
+```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=3}
 ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
   geom_histogram(binwidth = 5, color = "white") +
   geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",
@@ -654,7 +654,7 @@ ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +
   theme_minimal()
 ```
 
-```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia"}
+```{r, fig-asistencia2, fig.cap="Número de estudiantes según % de asistencia", fig.width=5, fig.height=3}
 resumen_niveles <- asistencia_alumno %>% count(Nivel)
 
 ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +
@@ -686,7 +686,7 @@ En conclusión, sí es posible clasificar a los alumnos por su nivel de asistenc
 
 *¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
 
-```{r, tareas-segun-asistencia}
+```{r, tareas-segun-asistencia, fig.width=5, fig.height=3}
 library(dplyr)
 library(ggplot2)
 library(lubridate)

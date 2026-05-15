@@ -107,12 +107,6 @@ actividad no es equilibrada: el componente "Sistema" tiene la barra más
 alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un
 usuario entra o se mueve por las secciones, el sistema lo registra.
 
-En la Figura \@ref(fig:fig1) se puede ver de forma muy clara cómo se
-reparte el uso del aula virtual. Lo que más llama la atención es que la
-actividad no es equilibrada: el componente "Sistema" tiene la barra más
-alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un
-usuario entra o se mueve por las secciones, el sistema lo registra.
-
 Después de la navegación básica, lo que más movimiento genera son las
 "Tareas" y los "Cuestionarios". Sus barras son altas porque son las
 herramientas que los alumnos usan para trabajar y examinarse. Por el
@@ -196,16 +190,6 @@ que son los lunes, martes, miercoles, jueves y viernes, hay dias mas
 frecuentados que otros. Por ejemplo el lunes es el dia que menos se
 consulta, no como el miercoles que es el que mas.
 
-Mirando la grafica \@ref(fig:fig2) podemos observar la distribucion de
-la actividad durante la semana. Podemos ver, que, evidentemente, los
-dias de la semana con mas peso son los dias lectivos, lo que sugiere que
-los usuarios acceden con mayor frecuencia entre semana para la consulta
-de materiales para poder realizar tanto sus practicas como sus
-actividades en las horas lectivas. Observamos, que entre los dias de mas
-frecuencia, que son los lunes, martes, miercoles, jueves y viernes, hay
-dias mas frecuentados que otros. Por ejemplo el lunes es el dia que
-menos se consulta, no como el miercoles que es el que mas.
-
 Respecto al fin de semana, se nota una caida significativa. Si
 comparamos un dia lectivo frente a un dia del fin de semana podemos
 observar que decae aproximadamente un 70%. El sabado se posiciona como
@@ -282,14 +266,6 @@ mayor parte de las acciones se concentran en el primer intervalo,
 específicamente entre los 0 y 1 minuto, donde se superan los 5.000
 registros de frecuencia.
 
-Mirando la gráfica \@ref(fig:fig3) podemos observar cómo se distribuye
-el tiempo que pasa entre una acción y otra dentro del componente
-'Sistema'. Se ve claramente que el comportamiento principal es el de
-"entrar y salir", es decir, realizar consultas muy rápidas. Esto se nota
-porque la mayor parte de las acciones se concentran en el primer
-intervalo, específicamente entre los 0 y 1 minuto, donde se superan los
-5.000 registros de frecuencia.
-
 A medida que aumenta el tiempo en el eje horizontal, observamos que la
 frecuencia decrece de forma drástica. Si comparamos la actividad del
 primer minuto frente a la que ocurre a partir de los cinco minutos, la
@@ -350,23 +326,13 @@ Esto no indica falta de interes, sino que el usuario necesita
 interactuar mas veces con el material y hacer una visualizacion de este
 para poder realizar la tarea que posteriormente hay que entregar.
 
-Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura
-domina sin duda la mayor parte de los registros, este dato nos hace
-comprobar que el aula virtual se usa mayoritariamente para la consulta
-de tareas y como un centro de estudio previo. La accion representa, como
-veemos en la tabla \@ref(tab:tabla-lectores-participantes) un porcentaje
-bastante menor. Esto no indica falta de interes, sino que el usuario
-necesita interactuar mas veces con el material y hacer una visualizacion
-de este para poder realizar la tarea que posteriormente hay que
-entregar.
-
 En definitiva, los usuarios utilizamos el aula virtual mayoritariamente
 como una biblioteca. Entramos mucho para consultar apuntes o avisos,
 pero una sola vez para entregar la tarea, lo que nos hace comprender que
 eso es un comportamiento muy normal y que realizamos mucho estudio y un
 clic final para el envio.
 
-## PREGUNTA 6
+## PREGUNTA 5
 
 ¿Existen usuarios con comportamientos atípicos en la plataforma? 
 
@@ -374,22 +340,13 @@ Para resolver esta cuestión, se utlizará un boxplot para ver
 loscomportamientos atípicos(outliers) que serán los valores que estén
 fuera de la caja del boxplot.
 
-```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual"}
-library(ggplot2)
-library(dplyr)
+```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual", fig.width=5, fig.height=2,fig.align='center', fig.pos='H', out.extra=''}
 
-eventos_usuario <- logs %>%
-  count(Nombre.completo.del.usuario, name = "numero_eventos")
+# Contamos el número de eventos realizados por cada usuario
+eventos_usuario <- logs %>%count(Nombre.completo.del.usuario, name = "numero_eventos")
 
-ggplot(eventos_usuario, aes(x = "Usuarios", y = numero_eventos)) +
-  geom_boxplot(fill = "lightblue") +
-  labs(
-    title = "Distribución de eventos por usuario",
-    x = "",
-    y = "Número total de eventos"
-  ) +
-  theme_minimal()
-
+# Creamos el boxplot
+ggplot(eventos_usuario, aes(x = "Usuarios", y = numero_eventos)) +geom_boxplot(fill = "turquoise") +labs(title = "Distribución de eventos por usuario",x = "",y = "Número total de eventos") +theme_minimal()
 ```
 
 En la Figura \@ref(fig:fig-usuarios-outliers) se muestra la distribución
@@ -415,14 +372,12 @@ concentran la mayor parte de la actividad y ayuda a relacionar dichos
 patrones con los comportamientos observados en el boxplot.
 
 ```{r tabla-frecuencia-componentes}
-
+# Creamos una tabla con la frecuencia de cada componente
 df_frecuencia_componentes <- as.data.frame(table(logs$Componente))
+# Renombramos las columnas
 colnames(df_frecuencia_componentes) <- c("Componente", "Frecuencia")
-
-knitr::kable(df_frecuencia_componentes, 
-             caption = "Frecuencia de uso por componentes del aula virtual", 
-             booktabs = TRUE)
-
+# Mostramos la tabla
+knitr::kable(df_frecuencia_componentes,caption = "Frecuencia de uso por componentes del aula virtual",booktabs = TRUE, labels="tab:frecuencia")
 ```
 
 En la Tabla\@ref(tabla-frecuencia-componentes) se muestra la frecuencia
@@ -445,86 +400,6 @@ Virtual.
 La identificación de estas diferencias de uso resulta importante, ya que
 permite detectar patrones de interacción poco comunes y comprender mejor
 cómo utilizan los usuarios los distintos recursos de la plataforma.
-
-## PREGUNTA 5
-
-¿Existen usuarios con comportamientos atípicos en la plataforma?
-
-Para resolver esta cuestión, se utlizará un boxplot para ver
-loscomportamientos atípicos(outliers) que serán los valores que estén
-fuera de la caja del boxplot.
-
-```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual", fig.width=5, fig.height=2,fig.align='center', fig.pos='H', out.extra=''}
-
-# Contamos el número de eventos realizados por cada usuario
-eventos_usuario <- logs %>%count(Nombre.completo.del.usuario, name = "numero_eventos")
-
-# Creamos el boxplot
-ggplot(eventos_usuario, aes(x = "Usuarios", y = numero_eventos)) +geom_boxplot(fill = "turquoise") +labs(title = "Distribución de eventos por usuario",x = "",y = "Número total de eventos") +theme_minimal()
-```
-
-En la Figura \ref{fig:fig-usuarios-outliers} se muestra la distribución
-del número total de eventos registrados por usuario . A partir de este
-gráfico se puede observar que la mayoría de usuarios presentan un nivel
-de actividad relativamente bajo y concentrado en un rango reducido.
-
-Sin embargo, también aparecen varios puntos por encima del límite
-superior del boxplot, lo que indica la presencia de usuarios con un
-número de eventos significativamente mayor que el resto. Estos valores
-pueden considerarse atípicos dentro del conjunto de datos.
-
-Lejos de tratarse de errores, estos comportamientos pueden corresponder
-a usuarios especialmente activos dentro de la plataforma, lo que permite
-identificar diferencias claras en los niveles de uso. Por tanto, se
-puede concluir que sí existen usuarios cuyo comportamiento se aleja del
-patrón general.
-
-A continuación, se llevará a cabo un análisis para identificar los
-usuarios con comportamientos atípicos en términos de interacción con la
-plataforma. Para ello, utilizaremos una tabla que permitirá visualizar
-las frecuencias de las interacciones de los usuarios con distintos
-componentes del aula virtual. Esta representación nos permitirá observar
-si existen usuarios que se desvían significativamente del comportamiento
-general en términos de cantidad de eventos registrados.
-
-```{r tabla-frecuencia-componentes}
-# Creamos una tabla con la frecuencia de cada componente
-df_frecuencia_componentes <- as.data.frame(table(logs$Componente))
-# Renombramos las columnas
-colnames(df_frecuencia_componentes) <- c("Componente", "Frecuencia")
-# Mostramos la tabla
-knitr::kable(df_frecuencia_componentes,caption = "Frecuencia de uso por componentes del aula virtual",booktabs = TRUE, labels="tab:frecuencia")
-```
-
-En la Tabla \ref{tab:frecuencia} se presenta la frecuencia de uso de los
-distintos componentes del aula virtual en Moodle. Este análisis nos
-permite identificar no solo los recursos más utilizados, sino también
-aquellos que muestran patrones de uso menos comunes, lo que nos ayuda a
-detectar comportamientos atípicos.
-
-Como era de esperar, el componente Tarea es el más utilizado, con un
-total de 27,983 registros. Esto sugiere que las tareas son el principal
-recurso de interacción dentro de la plataforma, lo cual es consistente
-con el objetivo académico de la plataforma Moodle. Sin embargo, los
-usuarios que interactúan principalmente con este componente podrían
-estar mostrando un comportamiento más intensivo o repetido, lo que
-podría considerarse un comportamiento atípico en comparación con el uso
-general.
-
-Por otro lado, componentes como Participación en el curso (con solo 1
-registro) o Hoja de cálculo Excel (solo 5 registros) presentan
-frecuencias extremadamente bajas. Estos componentes, aunque útiles,
-parecen estar siendo prácticamente ignorados por la mayoría de los
-usuarios. Este comportamiento puede reflejar una falta de interés,
-accesibilidad limitada, o que estos componentes no son relevantes para
-el tipo de actividad que se desarrolla en la plataforma.
-
-La identificación de estos comportamientos atípicos es importante, ya
-que puede indicarnos áreas en las que los recursos de la plataforma no
-están siendo aprovechados adecuadamente, o incluso señalar que algunos
-usuarios tienen un nivel de interacción significativamente más alto o
-bajo que el resto, lo que puede ayudar a mejorar la distribución y
-accesibilidad de los componentes.
 
 ## PREGUNTA 6
 

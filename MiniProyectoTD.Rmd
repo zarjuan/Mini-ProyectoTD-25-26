@@ -12,8 +12,6 @@ output:
     toc_depth: 3
     number_sections: true
     lang: spanish
-    fig_crop: false
-    extra_dependencies: ["float"]
   bookdown::html_document2:
     toc: true
     number_sections: true

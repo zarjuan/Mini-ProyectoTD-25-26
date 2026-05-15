@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 title: "Miniproyecto Tratamiento de los datos"
 author: 
   - "Juan Antonio Zarceño Gonzalez, Carla Giménez Piqueres,"
@@ -25,14 +26,63 @@ mainfont:
 editor_options: 
   markdown: 
     wrap: 72
+=======
+title: "MiniProyecto TD - Grupo N"
+subtitle: "Análisis Exploratorio de los Logs del Aula Virtual."
+author:
+  - name: Juan Antonio Zerceño
+    affil: 1
+  - name: Alejandro Manuel Tejera
+    affil: 2
+  - name: Maria José Monsonís
+    affil: 3
+  - name: Rubén García
+    affil: 4
+  - name: Carla Giménez Piqueres
+    affil: 5
+affiliation:
+  - num: 1
+    address: |
+      Grado en Ciencia de Datos
+      Universidad de Valencia, España
+    email: (email)@alumni.uv.es
+authorcitation: |
+  (Apellidos Alumnos)
+journal: notspecified
+type: article
+status: submit
+simplesummary: |
+  Este trabajo analiza el comportamiento de los estudiantes mediante los registros de actividad del Aula Virtual.
+keywords: |
+  Análisis exploratorio; R; Logs; Aula Virtual; Tidyverse.
+
+output: 
+  rticles::mdpi_article:
+    extra_dependencies: longtable
+    
+header-includes:
+  - \newcommand{\pandocbounded}[1]{#1}
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#Carga de librerias
+```{r}
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+library(knitr)
+library(tidyr)
+```
+
+
 # Introducción
 
+<<<<<<< HEAD
 
 En este trabajo, se realiza un Análisis Exploratorio de Datos (EDA)
 usando un conjunto de registros de actividad de la plataforma educativa
@@ -104,18 +154,21 @@ participar)?
 
 
 En este trabajo tenemos como objetivo realizar un analisis sobre la interaccion de los usuarios con el aula virtual. Para ello, partimos de una base de datos la cual usaremos para extraer las conclusiones necesarias y responder a las preguntas propuestas.
+=======
+Introducción
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
-Preguntas:
+En este trabajo, se realiza un Análisis Exploratorio de Datos (EDA) usando un conjunto de registros de actividad de la plataforma educativa Aula Virtual. Este tipo de datos recoge información detallada sobre las acciones que llevan a cabo los usuarios en el entorno virtual, permitiendo analizar su comportamiento y el uso de los recursos disponibles.
 
-En cuanto a la actividad semanal: ¿Qué días de la semana se usa más el aula virtual y cuánto cae el uso el sábado y el domingo?
+El dataset contiene registros anonimizados con variables como la fecha y hora de la acción, el identificador del usuario, el contexto del evento (curso, tarea, cuestionario, etc.), el componente al que pertenece la acción, el tipo de evento realizado, una breve descripción de la actividad, y datos técnicos adicionales como el origen del acceso y la dirección IP. Estos datos permiten estudiar la interacción de los usuarios con el contenido académico y los patrones de navegación en la plataforma.
 
-En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas), ¿quién interactúa más con esa sección proporcionalmente a su grupo?
+El objetivo principal de este trabajo es explorar las características del conjunto de datos, identificar patrones de comportamiento y analizar la frecuencia y tipo de eventos registrados. Para ello, se lleva a cabo un proceso que incluye cargar y preprocesar los datos, revisar posibles valores perdidos o inconsistencias, y después aplicar técnicas de análisis univariante y multivariante mediante herramientas estadísticas y visualizaciones.
 
-En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
+A través de este análisis, se busca obtener una visión general sobre el uso de Moodle, además de detectar posibles tendencias en el acceso a contenidos, la realización de actividades o la interacción con diversos recursos educativos. Este tipo de estudio puede ser útil para entender mejor el comportamiento de los usuarios y contribuir a la mejora de los entornos virtuales de aprendizaje.
 
-En cuanto a deducción de perfiles: Cuando vemos mucha actividad en "Tareas", ¿podemos saber cuántos son profesores solo por cómo se mueven por el resto de la web, o es imposible distinguirlos de los alumnos?
+Para orientar el análisis y extraer información relevante, se han planteado una serie de preguntas iniciales que servirán como guía a lo largo del estudio. Estas cuestiones surgen de una primera exploración del dataset y buscan identificar patrones de comportamiento, relaciones entre variables y tendencias en el uso de la plataforma.
 
-¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
+Durante el trabajo, se intentará responder a cada una de estas preguntas mediante técnicas de análisis exploratorio, apoyándose en representaciones gráficas y herramientas estadísticas. Así, no solo se busca describir los datos, sino también interpretarlos y obtener conclusiones que añadan valor al análisis realizado. cual usaremos para extraer las conclusiones necesarias y responder a las preguntas propuestas.
 
 
 # Importación
@@ -123,28 +176,24 @@ En cuanto a deducción de perfiles: Cuando vemos mucha actividad en "Tareas", ¿
 ```{r}
 #primero cargaremos los datos
 logs <- read.csv("data/logs_moodle_anon.csv")
- 
 ```
 
 # Figura
 
-```{r fig1, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual"}
-library(ggplot2)
-library(dplyr)
-resumen_datos<- logs %>% 
-  count(Componente) %>% 
-  slice_max(n, n=10) #cuenta los 10 componentes con más registros para no saturar el grafico 
+```{r fig1, fig.cap="Ranking de los 10 componentes Moodle con mayor volumen de interacción en el Aula Virtual", fig.width=5, fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
 
-ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+ 
-  geom_col(fill='lightblue')+
-  coord_flip() + #girar el grafico para que se lean bien los nombres
-  labs(title= '10 componentes con mayor actividad', 
-       x='componente de Moodle',  y= 'numero total de eventos') + 
-  theme_minimal()
+resumen_datos<- logs %>% count(Componente) %>% slice_max(n, n=10)
+#cuenta los 10 componentes con más registros para no saturar el grafico 
+
+ggplot(data= resumen_datos, aes(x= reorder(Componente, n), y=n))+ geom_col(fill='lightblue')+coord_flip() +labs(title= '10 componentes con mayor actividad', x='componente de Moodle',  y= 'numero total de eventos') +theme_minimal()
 ```
 
+<<<<<<< HEAD
 
 En la Figura \@ref(fig:fig1) se puede ver de forma muy clara cómo se reparte el uso del aula virtual. Lo que más llama la atención es que la actividad no es equilibrada: el componente "Sistema" tiene la barra más alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un usuario entra o se mueve por las secciones, el sistema lo registra.
+=======
+En la Figura \ref{fig:fig1} se puede ver de forma muy clara cómo se reparte el uso del aula virtual. Lo que más llama la atención es que la actividad no es equilibrada: el componente "Sistema" tiene la barra más alta con mucha diferencia. Esto tiene sentido, ya que cada vez que un usuario entra o se mueve por las secciones, el sistema lo registra.
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
 
 En la Figura \@ref(fig:fig1) se puede ver de forma muy clara cómo se
@@ -168,11 +217,10 @@ específica o menos frecuente.
 df_componentes<- as.data.frame(table(logs$Componente))
 colnames(df_componentes)<- c("Componente", "Frecuencia")
 
-knitr::kable(df_componentes, 
-             caption="Frecuencia de uso por componentes del aula virtual", 
-             booktabs=TRUE)
+knitr::kable(df_componentes, caption="Frecuencia de uso por componentes del aula virtual",  booktabs=TRUE, label="tab:componentes")
 ```
 
+<<<<<<< HEAD
 En la tabla \@ref(tab:tab1) se puede observar el recuento de todos los
 casos dentro de la columna "Componente", donde se muestra el número de
 veces que aparece cada uno de ellos. A diferencia de la gráfica, aquí no
@@ -184,6 +232,9 @@ una diferencia muy grande respecto al resto, acumulando el mayor número
 de eventos. Esto es coherente con lo comentado anteriormente, porque
 incluye muchas acciones distintas como el acceso o la navegación dentro
 del aula virtual, lo que hace que se registre constantemente.
+=======
+En la tabla \ref{tab:tab:componentes} se puede observar el recuento de todos los casos dentro de la columna "Componente", donde se muestra el número de veces que aparece cada uno de ellos. A diferencia de la gráfica, aquí no se representa de forma visual, sino que se pueden ver los valores exactos, lo que permite analizar con más precisión la actividad de los usuarios.Se vuelve a apreciar claramente que la actividad no se distribuye de forma uniforme, ya que el componente "Sistema" presenta una diferencia muy grande respecto al resto, acumulando el mayor número de eventos. Esto es coherente con lo comentado anteriormente, porque incluye muchas acciones distintas como el acceso o la navegación dentro del aula virtual, lo que hace que se registre constantemente.
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
 Después, aparecen los componentes "Tarea" y "Cuestionario", que también
 tienen valores bastante altos, aunque alejados de "Sistema". Esto se
@@ -220,31 +271,29 @@ Para poder responder correctamente la pregunta en relacion con la
 actividad semanal, mediante un ggplot, comprobaremos el apartado fecha
 de nuestro data frame para poder sacar conclusiones adecuadas.
 
-```{r fig2, fig.cap="Actividad semanal en el aula virtual"}
+```{r fig2, fig.cap="Actividad semanal en el aula virtual", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
 #primero cargamos las librerias que consideramos necesarias para poder crear una tabla que nos compare la actividad en el aula virtual cada dia
-library(dplyr)
-library(ggplot2)
-library(lubridate)
 
 #la segunda parte es el procesamiento de los datos
-logs_semanal <- logs %>%
-  mutate(
-    #Como vemos en el df la columna hora lleva tanto la fecha como la hora, lo que queremso hacer con la funcion dmy_hms es convertir solo la fecha y eliminar la hora
-    Fecha_dt = dmy_hms(Hora),
-    # extraemos el día de la semana (lunes como día 1, martes como dia 2 y asi hasta el domingo)
-    Dia_Semana = wday(Fecha_dt, label = TRUE, abbr = FALSE, week_start = 1)
-  ) %>%
-  # Contamos cuántos eventos hay por día para poder crear las columnas de la grafica
-  group_by(Dia_Semana) %>%
-  summarise(Total_Eventos = n())
+logs_semanal <- logs %>%mutate(
+#Como vemos en el df la columna hora lleva tanto la fecha como la hora, lo que queremso hacer con la funcion dmy_hms es convertir solo la fecha y eliminar la hora
+Fecha_dt = dmy_hms(Hora),
+# extraemos el día de la semana (lunes como día 1, martes como dia 2 y asi hasta el domingo)
+Dia_Semana = wday(Fecha_dt, label = TRUE, abbr = FALSE, week_start = 1)) %>%
+# Contamos cuántos eventos hay por día para poder crear las columnas de la grafica
+group_by(Dia_Semana) %>%summarise(Total_Eventos = n())
 
 #La ultima parte ya es crear la grafica con los datos obtenidos
-ggplot(logs_semanal, aes(x = Dia_Semana, y = Total_Eventos, fill = Dia_Semana)) + geom_col(show.legend = FALSE) + scale_fill_manual(values = c("lightblue","lightyellow","lavender","aliceblue","pink","lightcyan","powderblue")) + labs(title = "Actividad semanal en el aula virtual", subtitle = "Comparación de los dias respecto a la actividad en el aula virtual", x = "Dia de la semana", y = "Numero de registros") +   theme_minimal() 
+ggplot(logs_semanal, aes(x = Dia_Semana, y = Total_Eventos, fill = Dia_Semana)) + geom_col(show.legend = FALSE) +scale_fill_manual(values = c("lightblue","lightyellow","lavender","aliceblue","pink","lightcyan","powderblue")) + labs(title = "Actividad semanal en el aula virtual", subtitle = "Comparación de los dias respecto a la actividad en el aula virtual", x = "Dia de la semana", y = "Numero de registros") +   theme_minimal() 
 
 ```
 
+<<<<<<< HEAD
 
 Mirando la grafica \@ref(fig:fig2) podemos observar la distribucion de la actividad durante la semana. Podemos ver, que, evidentemente, los dias de la semana con mas peso son los dias lectivos, lo que sugiere que los usuarios acceden con mayor frecuencia entre semana para la consulta de materiales para poder realizar tanto sus practicas como sus actividades en las horas lectivas. Observamos, que entre los dias de mas frecuencia, que son los lunes, martes, miercoles, jueves y viernes, hay dias mas frecuentados que otros. Por ejemplo el lunes es el dia que menos se consulta, no como el miercoles que es el que mas.
+=======
+Mirando la grafica \ref{fig:fig2} podemos observar la distribucion de la actividad durante la semana. Podemos ver, que, evidentemente, los dias de la semana con mas peso son los dias lectivos, lo que sugiere que los usuarios acceden con mayor frecuencia entre semana para la consulta de materiales para poder realizar tanto sus practicas como sus actividades en las horas lectivas. Observamos, que entre los dias de mas frecuencia, que son los lunes, martes, miercoles, jueves y viernes, hay dias mas frecuentados que otros. Por ejemplo el lunes es el dia que menos se consulta, no como el miercoles que es el que mas.
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
 
 Mirando la grafica \@ref(fig:fig2) podemos observar la distribucion de
@@ -279,42 +328,20 @@ En cuanto al comportamiento del usuario (Sistema): El apartado que más
 se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se
 queda mucho tiempo navegando por todo el curso?
 
-## PREGUNTA 3
+## PREGUNTA 2
 
 En cuanto a los roles: Si comparamos el uso de las notas (los alumnos para verlas y los profes para ponerlas). ¿Quién interactúa más con esa sección proporcionalmente a su grupo?
 
-```{r}
-library(dplyr)
-library(ggplot2)
+```{r, fig-rolesnotas,fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
+
 #filtramos los registros relacionados con las notas
-notas <- logs %>%
-  filter(grepl("calific|grade|nota", Nombre.evento, ignore.case = TRUE) |
-           grepl("calific|grade|nota", Componente, ignore.case = TRUE))
+notas <- logs %>%filter(grepl("calific|grade|nota", Nombre.evento, ignore.case = TRUE) |grepl("calific|grade|nota", Componente, ignore.case = TRUE))
 
 #clasificamos las acciones entre alumnos y profesores
-notas_roles <- notas %>%
-  mutate(Rol = ifelse(grepl("actualizado|creado|modificado|graded", 
-                            Nombre.evento, ignore.case = TRUE),
-                      "Profesorado",
-                      "Alumnado")) %>%
-  count(Rol) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100, 1))
+notas_roles <- notas %>%mutate(Rol = ifelse(grepl("actualizado|creado|modificado|graded",Nombre.evento, ignore.case = TRUE),"Profesorado","Alumnado")) %>%count(Rol) %>%mutate(Porcentaje = round(n / sum(n) * 100, 1))
 
 #creamos el grafico de barras
-ggplot(notas_roles, aes(x = Rol, y = Porcentaje, fill = Rol)) +
-  geom_col(width = 0.5, show.legend = FALSE) +
-  geom_text(aes(label = paste0(Porcentaje, "%")),
-            vjust = -0.31,
-            size = 4) + 
-  geom_col(width = 0.5, show.legend = FALSE) +
-  scale_fill_manual(values = c("Alumnado" = "turquoise",
-                               "Profesorado" = "lightpink")) +
-  labs(title = "Interacción con la sección de notas",
-       subtitle = "Comparación proporcional entre alumnado y profesorado",
-       x = "Grupo de usuarios",
-       y = "Porcentaje de interacciones") +theme_minimal()
-
-
+ggplot(notas_roles, aes(x = Rol, y = Porcentaje, fill = Rol)) +geom_col(width = 0.5, show.legend = FALSE) +geom_text(aes(label = paste0(Porcentaje, "%")),vjust = -0.31,size = 4) + geom_col(width = 0.5, show.legend = FALSE) +scale_fill_manual(values = c("Alumnado" = "turquoise","Profesorado" = "lightpink")) +labs(title = "Interacción con la sección de notas",subtitle = "Comparación proporcional entre alumnado y profesorado",x = "Grupo de usuarios",y = "Porcentaje de interacciones") +theme_minimal()
 ```
 
 Para responder a esta pregunta hemos analizado los registros relacionados con la sección de notas del aula virtual. Para ello, primero filtramos aquellos eventos cuyo nombre o componente estuviera relacionado con calificaciones o notas para poder clasificar esas interacciones entre alumnado y profesorado.
@@ -323,32 +350,30 @@ En la figura se observa claramente que el alumnado concentra la mayor parte de l
 
 En conclusión, quienes interactúan más con la sección de notas son los alumnos, ya que acceden de forma recurrente para consultar información académica y conforman la mayor parte de los usuarios del aula virtual mientras que el profesorado realiza un uso más reducido y específico centrado en la gestión de calificaciones.
 
-## PREGUNTA 4
+## PREGUNTA 3
 
 En cuanto al comportamiento del usuario (Sistema): El apartado que más se usa, ¿es de "entrar y salir" (consultas rápidas) o es de gente que se queda mucho tiempo navegando por todo el curso?
 
+<<<<<<< HEAD
 
 ```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema"}
 library(tidyverse)
 library(lubridate)
+=======
+```{r fig3, fig.cap="distribución de tiepos entre acciones en el componente sistema", fig.width=5, fig.height=3,fig.align='center', fig.pos='H', out.extra=''}
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
-logs_sistema <- logs %>%
-  mutate(Hora_dt = parse_date_time(Hora, orders = c("dmy HMS", "dmy HM"))) %>%
-  arrange(Nombre.completo.del.usuario, Hora_dt) %>%
-  group_by(Nombre.completo.del.usuario) %>%
-  mutate(Dif_Minutos = as.numeric(difftime(Hora_dt, lag(Hora_dt), units = "mins"))) %>%
-  filter(Componente == "Sistema", !is.na(Dif_Minutos))
+logs_sistema <- logs %>%mutate(Hora_dt = parse_date_time(Hora, orders = c("dmy HMS", "dmy HM"))) %>%arrange(Nombre.completo.del.usuario, Hora_dt) %>%group_by(Nombre.completo.del.usuario) %>%mutate(Dif_Minutos = as.numeric(difftime(Hora_dt, lag(Hora_dt), units = "mins"))) %>%filter(Componente == "Sistema", !is.na(Dif_Minutos))
 
-ggplot(logs_sistema, aes(x = Dif_Minutos)) +
-  geom_histogram(binwidth = 0.5, fill = "lightpink", color = "white") +
-  coord_cartesian(xlim = c(0, 10), ylim = c(0, 5000)) +
-  labs(title = "Comportamiento",
-       x = "Minutos entre acciones", 
-       y = "Frecuencia")
+ggplot(logs_sistema, aes(x = Dif_Minutos)) +geom_histogram(binwidth = 0.5, fill = "lightpink", color = "white") +coord_cartesian(xlim = c(0, 10), ylim = c(0, 5000)) +labs(title = "Comportamiento",x = "Minutos entre acciones",y = "Frecuencia")
 ```
 
+<<<<<<< HEAD
 
 Mirando la gráfica \@ref(fig:fig3) podemos observar cómo se distribuye el tiempo que pasa entre una acción y otra dentro del componente 'Sistema'. Se ve claramente que el comportamiento principal es el de "entrar y salir", es decir, realizar consultas muy rápidas. Esto se nota porque la mayor parte de las acciones se concentran en el primer intervalo, específicamente entre los 0 y 1 minuto, donde se superan los 5.000 registros de frecuencia.
+=======
+Mirando la gráfica \ref{fig:fig3} podemos observar cómo se distribuye el tiempo que pasa entre una acción y otra dentro del componente 'Sistema'. Se ve claramente que el comportamiento principal es el de "entrar y salir", es decir, realizar consultas muy rápidas. Esto se nota porque la mayor parte de las acciones se concentran en el primer intervalo, específicamente entre los 0 y 1 minuto, donde se superan los 5.000 registros de frecuencia.
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
 Mirando la gráfica \@ref(fig:fig3) podemos observar cómo se distribuye
 el tiempo que pasa entre una acción y otra dentro del componente
@@ -377,7 +402,7 @@ minutos.
 
 ## PREGUNTA 5
 
-## PREGUNTA 5
+## PREGUNTA 4
 
 ¿Qué porcentaje de la clase entra solo a "mirar" (ver archivos o avisos) comparado con los que realmente "hacen" algo (subir tareas o participar)?
 
@@ -391,38 +416,21 @@ Para resolver esta pregunta, realizaremos tanto un grafico pie como una
 tabla, para que los porcentajes queden mas claros y poder responder mas
 claramente a la pregunta
 
-```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos"}
-library(dplyr)
-library(ggplot2)
-library(knitr)
-
+```{r accion-lectura, fig.cap="distinccion entre los usuarios activos y los pasivos", fig.width=5, fig.height=2,fig.align='center', fig.pos='H', out.extra=''}
 #primero agrupamos los registros pasivos y los registros activos
-logs_interaccion <- logs %>% mutate(Tipo_Accion = ifelse(grepl("visto|visualizado|viewed",                           `Nombre.evento`, ignore.case = TRUE),"Lectura", "Acción"))
-
-tabla_perfiles <- logs_interaccion %>% 
-  count(Tipo_Accion) %>%
-  mutate(Porcentaje = round(n / sum(n) * 100, 1))
-
+logs_interaccion <- logs %>% mutate(Tipo_Accion = ifelse(grepl("visto|visualizado|viewed",`Nombre.evento`, ignore.case = TRUE),"Lectura", "Acción"))
+tabla_perfiles <- logs_interaccion %>% count(Tipo_Accion) %>%mutate(Porcentaje = round(n / sum(n) * 100, 1))
 #luego creamos nuestro grafico 
-ggplot(tabla_perfiles, aes(x = "", y = n, fill = Tipo_Accion)) +
-  geom_bar(stat = "identity", width = 1, color = "white") + coord_polar("y", start = 0) + 
-  scale_fill_manual(values = c( "Lectura" = "lightcyan","Acción" = "powderblue")) + 
-  theme_void() +labs(title = "¿Lectores o Participantes?", subtitle = "porcentaje de lectura vs accion ", fill = "Participante")
+ggplot(tabla_perfiles, aes(x = "", y = n, fill = Tipo_Accion)) +geom_bar(stat = "identity", width = 1, color = "white") + coord_polar("y", start = 0) + scale_fill_manual(values = c( "Lectura" = "lightcyan","Acción" = "powderblue")) + theme_void() +labs(title = "¿Lectores o Participantes?", subtitle = "porcentaje de lectura vs accion ", fill = "Participante")
 ```
 
 ```{r tabla-lectores-participantes}
+tabla_perfiles <- logs_interaccion %>% count(Tipo_Accion) %>% mutate(Porcentaje = round(n / sum(n) * 100, 1))
 
-library(knitr)
-
-tabla_perfiles <- logs_interaccion %>% 
-  count(Tipo_Accion) %>% 
-  mutate(Porcentaje = round(n / sum(n) * 100, 1))
-
-knitr::kable(tabla_perfiles, caption = "Comparacion entre la interaccion pasiva y activa",
-             booktabs = TRUE, col.names = c("Tipo de Interacción", "numero de interacciones", "Porcentaje"),
-             align = "lcc") 
+knitr::kable(tabla_perfiles, caption = "Comparacion entre la interaccion pasiva y activa",booktabs = TRUE,col.names = c("Tipo de Interacción", "numero de interacciones", "Porcentaje"),align = "lcc", labels="tab:lectores") 
 ```
 
+<<<<<<< HEAD
 Para poder profundizar en el comportamiento de los usuarios una vez
 entran en el aula virtual, hemos usado la figura
 \@ref(fig:accion-lectura) para comprobar la proporcion entre el consumo
@@ -435,9 +443,12 @@ la visualizacion de recursos.
 
 
 Para poder profundizar en el comportamiento de los usuarios una vez entran en el aula virtual, hemos usado la figura \@ref(fig:accion-lectura) para comprobar la proporcion entre el consumo de contenidos y la participacion directa mediante subida de tareas o realizacion de cuestionarios.\
+=======
+Para poder profundizar en el comportamiento de los usuarios una vez entran en el aula virtual, hemos usado la figura \ref{fig:accion-lectura} para comprobar la proporcion entre el consumo de contenidos y la participacion directa mediante subida de tareas o realizacion de cuestionarios.\
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 Esto lo hemos decidido encasillar en dos grandes grupos, en accion donde se almacenan la entrega de tareas, cuestionarios y foros y en lectura, donde se almacenan las consultas de materiales, la lectura de avisos y la visualizacion de recursos.
 
-Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura domina sin duda la mayor parte de los registros, este dato nos hace comprobar que el aula virtual se usa mayoritariamente para la consulta de tareas y como un centro de estudio previo. La accion representa, como veemos en la tabla \@ref(tab:tabla-lectores-participantes) un porcentaje bastante menor. Esto no indica falta de interes, sino que el usuario necesita interactuar mas veces con el material y hacer una visualizacion de este para poder realizar la tarea que posteriormente hay que entregar.
+Como podemos observar en el grafico \ref{fig:accion-lectura} la lectura domina sin duda la mayor parte de los registros, este dato nos hace comprobar que el aula virtual se usa mayoritariamente para la consulta de tareas y como un centro de estudio previo. La accion representa, como veemos en la tabla \ref{tab:tab:lectores} un porcentaje bastante menor. Esto no indica falta de interes, sino que el usuario necesita interactuar mas veces con el material y hacer una visualizacion de este para poder realizar la tarea que posteriormente hay que entregar.
 
 Como podemos observar en el grafico \@ref(fig:accion-lectura) la lectura
 domina sin duda la mayor parte de los registros, este dato nos hace
@@ -552,10 +563,51 @@ accesibilidad de los componentes.
 del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo
 como un almacén de archivos?
 
-## PREGUNTA 7
+## PREGUNTA 5
+
+¿Existen usuarios con comportamientos atípicos en la plataforma?
+
+Para resolver esta cuestión, se utlizará un boxplot para ver loscomportamientos atípicos(outliers) que serán los valores que estén fuera de la caja del boxplot.
+
+```{r fig-usuarios-outliers, fig.cap="Distribución del número de eventos registrados por usuario en el Aula Virtual", fig.width=5, fig.height=2,fig.align='center', fig.pos='H', out.extra=''}
+
+# Contamos el número de eventos realizados por cada usuario
+eventos_usuario <- logs %>%count(Nombre.completo.del.usuario, name = "numero_eventos")
+
+# Creamos el boxplot
+ggplot(eventos_usuario, aes(x = "Usuarios", y = numero_eventos)) +geom_boxplot(fill = "turquoise") +labs(title = "Distribución de eventos por usuario",x = "",y = "Número total de eventos") +theme_minimal()
+```
+
+En la Figura \ref{fig:fig-usuarios-outliers} se muestra la distribución del número total de eventos registrados por usuario . A partir de este gráfico se puede observar que la mayoría de usuarios presentan un nivel de actividad relativamente bajo y concentrado en un rango reducido.
+
+Sin embargo, también aparecen varios puntos por encima del límite superior del boxplot, lo que indica la presencia de usuarios con un número de eventos significativamente mayor que el resto. Estos valores pueden considerarse atípicos dentro del conjunto de datos.
+
+Lejos de tratarse de errores, estos comportamientos pueden corresponder a usuarios especialmente activos dentro de la plataforma, lo que permite identificar diferencias claras en los niveles de uso. Por tanto, se puede concluir que sí existen usuarios cuyo comportamiento se aleja del patrón general.
+
+A continuación, se llevará a cabo un análisis para identificar los usuarios con comportamientos atípicos en términos de interacción con la plataforma. Para ello, utilizaremos una tabla que permitirá visualizar las frecuencias de las interacciones de los usuarios con distintos componentes del aula virtual. Esta representación nos permitirá observar si existen usuarios que se desvían significativamente del comportamiento general en términos de cantidad de eventos registrados.
+
+```{r tabla-frecuencia-componentes}
+# Creamos una tabla con la frecuencia de cada componente
+df_frecuencia_componentes <- as.data.frame(table(logs$Componente))
+# Renombramos las columnas
+colnames(df_frecuencia_componentes) <- c("Componente", "Frecuencia")
+# Mostramos la tabla
+knitr::kable(df_frecuencia_componentes,caption = "Frecuencia de uso por componentes del aula virtual",booktabs = TRUE, labels="tab:frecuencia")
+```
+
+En la Tabla \ref{tab:frecuencia} se presenta la frecuencia de uso de los distintos componentes del aula virtual en Moodle. Este análisis nos permite identificar no solo los recursos más utilizados, sino también aquellos que muestran patrones de uso menos comunes, lo que nos ayuda a detectar comportamientos atípicos.
+
+Como era de esperar, el componente Tarea es el más utilizado, con un total de 27,983 registros. Esto sugiere que las tareas son el principal recurso de interacción dentro de la plataforma, lo cual es consistente con el objetivo académico de la plataforma Moodle. Sin embargo, los usuarios que interactúan principalmente con este componente podrían estar mostrando un comportamiento más intensivo o repetido, lo que podría considerarse un comportamiento atípico en comparación con el uso general.
+
+Por otro lado, componentes como Participación en el curso (con solo 1 registro) o Hoja de cálculo Excel (solo 5 registros) presentan frecuencias extremadamente bajas. Estos componentes, aunque útiles, parecen estar siendo prácticamente ignorados por la mayoría de los usuarios. Este comportamiento puede reflejar una falta de interés, accesibilidad limitada, o que estos componentes no son relevantes para el tipo de actividad que se desarrolla en la plataforma.
+
+La identificación de estos comportamientos atípicos es importante, ya que puede indicarnos áreas en las que los recursos de la plataforma no están siendo aprovechados adecuadamente, o incluso señalar que algunos usuarios tienen un nivel de interacción significativamente más alto o bajo que el resto, lo que puede ayudar a mejorar la distribución y accesibilidad de los componentes.
+
+## PREGUNTA 6
 
 ¿Qué peso tiene la comunicación (Foros y Mensajes) dentro del uso total del aula? ¿Se usa la plataforma para interactuar entre nosotros o solo como un almacén de archivos?
 
+<<<<<<< HEAD
 
 ```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros"}
 library(ggplot2)
@@ -599,7 +651,156 @@ esfuerzos en gestionar el contenido, ignorando las herramientas de
 comunicación disponibles.
 
 Si analizamos la figura \@ref(fig:fig-comunicacion) que compara el uso de los distintos componentes, se hace evidente una gran diferencia entre el acceso a materiales y la interacción social. Predomina, de manera casi exclusiva, el uso de las carpetas de contenidos frente a la participación en foros. Esta diferencia sugiere que el alumnado percibe el aula virtual como una herramienta de consulta y descarga de documentación más que como un espacio de debate o intercambio comunicativo.
+=======
+```{r fig-comunicacion, fig.cap="comparativa entre el uso de materiales de estudio y la participación en foros", fig.width=5, fig.height=2,fig.align='center', fig.pos='H', out.extra=''}
+comunicacion_vs_recursos <- logs %>%filter(Componente %in% c("Foro", "Mensajes", "Carpeta", "Archivo")) %>%count(Componente)
+ggplot(comunicacion_vs_recursos, aes(x = Componente, y = n, fill = Componente)) +geom_col(fill = "lavender", color = "white") + labs(title = "Uso de Comunicación vs Recursos",x = "Componente",y = "Número de interacciones") +theme_minimal() +theme(legend.position = "none")
+```
+
+Si analizamos la figura \ref{fig:fig-comunicacion} que compara el uso de los distintos componentes, se hace evidente una gran diferencia entre el acceso a materiales y la interacción social. Predomina, de manera casi exclusiva, el uso de las carpetas de contenidos frente a la participación en foros. Esta diferencia sugiere que el alumnado percibe el aula virtual como una herramienta de consulta y descarga de documentación más que como un espacio de debate o intercambio comunicativo.
+>>>>>>> 9c11c73b547a62255218c1567d888d4bd64a6de1
 
 Al observar los datos cuantitativos, vemos que el componente "Carpeta" registra más de 3.000 interacciones, mientras que el "Foro" presenta una actividad mínima en comparación. Si establecemos una comparativa porcentual, el acceso a recursos supone prácticamente la totalidad de las acciones analizadas en esta categoría, dejando la comunicación en un segundo plano muy alejado. Esto confirma que la utilidad principal de la plataforma para los usuarios es la obtención de materiales para el estudio personal.
 
 Como conclusión, los datos reflejan que el aula virtual funciona esencialmente como un almacén de archivos. No existe un hábito de interaccion dentro del sistema, ya que los usuarios concentran sus esfuerzos en gestionar el contenido, ignorando las herramientas de comunicación disponibles.
+
+## PREGUNTA 7
+
+*¿Se puede diferenciar entre **alumnos**, **profesores** y **administradores**?*
+
+Encontramos 3 posibles roles, *alumno*, *profesor* y *administrador*. Para diferenciarlos, seguiremos los siguientes critérios:
+
+**Alumno**: Ha firmado asistencia, ha enviado una entrega, ha intentado un cuestionario y ha sido calificado. Dentro de `Usuario afectado`, cuando se hace `Usuario Calificado`
+
+**Profesor**: Ha creado preguntas de cuestionario, ha actualizado o borrado calificaciones, ha gestionado sesiones de asistencia, ha actualizado el calendario del curso y es quien aparece calificando a otros y dentro de `Nombre completo del usuario` , cuando hay `Usuario calificado`
+
+**Administrador**: Ha matriculado usuarios\`, ha asignado roles y ha creado secciones del curso
+
+Dado que no podemos confirmar con total certeza que los eventos registrados corresponden exclusivamente a un único tipo de usuario, vamos a clasificar a todos los usuarios según los tres roles posibles: alumno, profesor y administrador. A continuación, comprobaremos si algún usuario queda clasificado en más de un rol simultáneamente y lo solucionaremos.
+
+```{r,establecer roles}
+# Criterios por rol
+alumnos <- logs %>%filter(Nombre.evento %in% c("Asistencia confirmada por el alumno","Se ha enviado una entrega","Intento de cuestionario actualizado")) %>%distinct(Nombre.completo.del.usuario) %>%mutate(rol = "Alumno")
+profesores <- logs %>%filter(Nombre.evento %in% c("Pregunta creada","Elemento de calificación actualizado","Calificación borrada","Sesión añadida","Sesión actualizada","Sesión eliminada","Evento de calendario actualizado")) %>%distinct(Nombre.completo.del.usuario) %>%mutate(rol = "Profesor")
+administradores <- logs %>%filter(Nombre.evento %in% c("Usuario matriculado en el curso","Rol asignado","Sección del curso creada")) %>%distinct(Nombre.completo.del.usuario) %>%mutate(rol = "Administrador")
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+# Usuarios con más de un rol
+conflictos <- roles_todos %>%group_by(Nombre.completo.del.usuario) %>%summarise(roles = paste(sort(unique(rol)), collapse = " + "),n_roles = n_distinct(rol)) %>%filter(n_roles > 1) %>%arrange(desc(n_roles))
+print(conflictos)
+```
+
+Como podemos apreciar en la tabla, encontramos dos usuarios con problemas, dado a que utilizan actividades de varios roles.
+
+Analizando la actividad de ambos usuarios, realizan principalmente tareas de profesor. Especialmente `U0072`, que probablemente sea el **profesor principal**, ya que lleva a cabo muchas actividades distintas como crear preguntas, gestionar asistencia o borrar calificaciones. Además, sus 13079 registros incluyen acciones de estudiante, administrador y profesor, lo que indica que tiene un papel clave en la gestión del curso.
+
+En cambio, `U0095` tiene bastante menos actividad (2836 registros). Aunque ha realizado algunas tareas de administrador, la mayoría de sus acciones están relacionadas con funciones de **profesor**, sobre todo cuestionarios. Por ello, es probable que también sea **profesor**, pero con menos importancia que `U0072.`
+
+```{r, arreglar los listas de roles}
+administradores <- administradores[administradores$Nombre.completo.del.usuario != "U0072",]
+administradores <- administradores[administradores$Nombre.completo.del.usuario != "U0095",]
+alumnos <- alumnos[alumnos$Nombre.completo.del.usuario != "U0072",]
+roles_todos <- bind_rows(alumnos, profesores, administradores)
+```
+
+Aquí se queda fuera muchos usuarios, dado a que solo tienen la actividad de `Usuario calificado`, o demasiada poca actividad como para ser relevante. Hay varios que se han quedado fuera que es probable que sean observadores.
+
+```{r fig-numroles, fig.cap="Cuantas personas hay de cada rol", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
+ggplot(roles_todos, aes(x = rol, fill = rol)) +geom_bar() +labs(title = "Número de usuarios por rol",x = "Rol",y = "Nº de usuarios") +theme_minimal()
+```
+
+En respuesta a la pregunta inicial, es complicado distinguir entre profesores, alumnos y administradores. Pero acotandose a unos criterios se puede trabajar un poco con esos datos, como las preguntas que se van a realizar a continuación.
+
+## PREGUNTA 8
+
+*¿A qué hora del día se entra más al aula virtual los **alumnos** y los **profesores** según el día de la semana?*
+
+Para resolver esta cuestión se va a realizar utilizaremos **dos mapas de calor**. La pregunta tiene dos dimensiones simultáneas (hora del día × día de la semana) más la separación por rol. Un `heatmap` con `facet_wrap` permite ver de un vistazo en qué celdas se concentra la actividad, algo que sería muy difícil de leer con barras agrupadas.
+
+```{r, fig-heatmapHoras, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
+# Preprocesamos usando los df de los roles
+logs_hora <- logs %>%mutate(Hora_dt    = dmy_hms(Hora),Hora_dia   = hour(Hora_dt),Dia_Semana = wday(Hora_dt, label = TRUE, abbr = FALSE, week_start = 1)) %>%
+  # Filtramos para asegurar que solo procesamos usuarios conocidos
+  filter(Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario |Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario) %>%
+  # Asignamos Rol según su pertenencia a los DF de la Pregunta 9
+mutate(Rol = case_when(Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario    ~ "Alumnado",Nombre.completo.del.usuario %in% profesores$Nombre.completo.del.usuario ~ "Profesorado"))
+# Agrupar
+logs_heatmap <- logs_hora %>%group_by(Rol, Dia_Semana, Hora_dia) %>%summarise(Total = n(), .groups = "drop")
+# Hacer mapa de calor
+hacer_heatmap_limpio <- function(datos, rol, color_bajo, color_alto) {ggplot(datos %>% filter(Rol == rol), aes(x = Dia_Semana, y = Hora_dia, fill = Total)) +geom_tile(color = "white", linewidth = 0.1) +
+    # Usamos gradiente lineal para que sea más suave y fácil de leer
+scale_fill_gradient(low = color_bajo, high = color_alto, name = "Nº eventos") +scale_y_continuous(breaks = 0:23, labels = paste0(0:23, "h")) +labs(title = paste("Actividad por hora y día —", rol),x= "Día de la semana",y= "Hora del día") +theme_minimal() +theme(axis.text.x = element_text(angle = 35, hjust = 1, size = 6), axis.text.y = element_text(size = 3), axis.title.y = element_text(size = 6, margin = margin(r = 4)), axis.title.x = element_text(size = 6))}
+# Generar Gráficos
+# Alumnado
+hacer_heatmap_limpio(logs_heatmap, "Alumnado", "#f7fbff", "steelblue")
+# Profesorado
+hacer_heatmap_limpio(logs_heatmap, "Profesorado", "#fff5eb", "darkorange")
+```
+
+El heatmap muestra claramente que la actividad del **alumnado** se concentra en la franja horaria de **9h a 14h** durante los días lectivos (lunes a viernes), con un segundo pico muy moderado entre las **16h y las 20h**. Esto coincide con los horarios de clase presencial y con las horas de estudio vespertino habituales. Durante el fin de semana, la actividad cae notablemente, aunque el domingo presenta un repunte puntual por la tarde, probablemente asociado a la entrega de tareas de inicio de semana. Además cabe destacar, que a diferencia de los **profesores**, hay actividad durante las 24h del día, indicando que, aunque pocos, hay actividad incluso en la madruda.
+
+El **profesorado**, por su parte, muestra una distribución menos dispersa a lo largo del día y con una intensidad global mucho menor (en parte porque son menos usuarios). Su actividad tiende a concentrarse en **horario de mañana entre semana**, coincidiendo con la jornada laboral, y prácticamente desaparece los fines de semana. También hay un segundo pico muy moderado **por la tarde**. Es muy sorprendente que a diferencia de los **alumnos**, no hay actividad registrada en horas de sueño.
+
+Igualmente, se sigue reflejando la mayor actividad los **miércoles** y los **viernes** lo cual se indicaba en una figura anterior \ref{fig:fig2} para los alumnos. Casualmente, el día de antes los profesores tienes más actividad.
+
+## PREGUNTA 9
+
+*¿Qué tan regulares son los **alumnos** firmando la asistencia online? ¿Se puede clasificar a los **alumnos** por su nivel de asistencia?*
+
+```{r, asistencias-filtradas}
+#Identificamos alumnos
+alumnos <- logs %>%filter(Nombre.evento %in% c("Asistencia confirmada por el alumno","Se ha enviado una entrega","Intento de cuestionario actualizado")) %>%distinct(Nombre.completo.del.usuario)
+# Filtramos firmas de asistencia solo de alumnos
+asistencia <- logs %>%filter(Componente == "Asistencia",Nombre.evento == "Asistencia confirmada por el alumno",Nombre.completo.del.usuario %in% alumnos$Nombre.completo.del.usuario) %>%mutate(Fecha = as.Date(dmy_hms(Hora)))
+#Total de sesiones únicas del curso
+total_sesiones <- asistencia %>%distinct(Fecha) %>%nrow()
+# 22 sesiones
+# Asistencias por alumno y porcentaje
+# Incluimos también alumnos que nunca firmaron (0 asistencias)
+asistencia_alumno <- alumnos %>%left_join(asistencia %>%group_by(Nombre.completo.del.usuario) %>%summarise(Sesiones_Asistidas = n_distinct(Fecha), .groups = "drop"),by = "Nombre.completo.del.usuario") %>%mutate(Sesiones_Asistidas = replace_na(Sesiones_Asistidas, 0),Pct_Asistencia     = round(Sesiones_Asistidas / total_sesiones * 100, 1))
+# Clasificación por nivel
+asistencia_alumno <- asistencia_alumno %>%mutate(Nivel = case_when(Pct_Asistencia >= 75 ~ "Alta (>=75%)",Pct_Asistencia >= 50 ~ "Media (50–74%)",Pct_Asistencia >= 25 ~ "Baja (25–49%)",TRUE ~ "Muy baja (<25%)"),Nivel = factor(Nivel, levels = c("Alta (>=75%)", "Media (50–74%)","Baja (25–49%)", "Muy baja (<25%)"))
+  )
+```
+
+```{r, fig-asistencia1, fig.cap="Mapa de calor de horas de uso del aula virtual", fig.width=5, fig.height=2, fig.align='center', fig.pos='H', out.extra=''}
+ggplot(asistencia_alumno, aes(x = Pct_Asistencia, fill = Nivel)) +geom_histogram(binwidth = 5, color = "white") +geom_vline(xintercept = c(25, 50, 75), linetype = "dashed",color = "grey40", linewidth = 0.7)+scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title    = "Distribución de la asistencia online del alumnado",subtitle = paste("Total de sesiones del curso:", total_sesiones),x = "% de sesiones firmadas",y = "Número de alumnos",fill = "Nivel de asistencia") +theme_minimal()
+```
+
+```{r, fig-asistencia2, fig.width=5, fig.height=1.75, fig.align='center', fig.pos='H', out.extra=''}
+resumen_niveles <- asistencia_alumno %>% count(Nivel)
+ggplot(resumen_niveles, aes(x = Nivel, y = n, fill = Nivel)) +geom_col(show.legend = FALSE, width = 0.6) +geom_text(aes(label = n), vjust = -0.5, size = 4, fontface = "bold") +scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title = "Nivel de asistencia",x = "Nivel de asistencia",y = "Número de alumnos") +scale_y_continuous(expand = expansion(mult = c(0, 0.2))) + theme_minimal()
+```
+
+Para analizar la regularidad en la firma de asistencia online, se filtraron los eventos `"Asistencia confirmada por el alumno"` del componente `Asistencia`. Durante el curso se registraron **22 sesiones** únicas, y **71 alumnos** firmaron al menos una vez.
+
+El histograma muestra una distribución claramente **polarizada**: hay un grupo numeroso de alumnos con asistencia muy alta (por encima del 75%), pero también un grupo considerable con asistencia baja o muy baja, con pocos alumnos en la franja intermedia. Esto sugiere que no existe un comportamiento uniforme: los alumnos tienden a ser o muy regulares o muy irregulares, sin término medio.
+
+La clasificación por niveles confirma esta tendencia. El grupo de asistencia **Alta (\>=75%)** es el más numeroso, lo que indica que la mayoría del alumnado sí firma de forma consistente. Sin embargo, el peso del grupo de asistencia **Muy baja (\<25%)** no es despreciable, e identifica a alumnos que prácticamente no participan en el control de asistencia online.
+
+En conclusión, sí es posible clasificar a los alumnos por su nivel de asistencia, y esta segmentación resulta útil para detectar perfiles de riesgo académico dentro del curso.
+
+## PREGUNTA 10
+
+*¿Cual es el nivel de entrega de tareas dependiendo del % de firma de asistencia?¿Los que no asisten también entregan menos tareas?*
+
+```{r, tareas-segun-asistencia,fig.width=6,fig.height=3, fig.align='center', fig.pos='H', out.extra=''}
+entregas <- logs %>%filter(Nombre.evento == "Se ha enviado una entrega") %>%count(Nombre.completo.del.usuario, name = "Tareas_Entregadas")
+asistencia_entregas <- asistencia_alumno %>%left_join(entregas, by = "Nombre.completo.del.usuario") %>%mutate(Tareas_Entregadas = replace_na(Tareas_Entregadas, 0))
+# Resumen por nivel de asistencia
+resumen <- asistencia_entregas %>%group_by(Nivel) %>%summarise(Num_Alumnos = n(),Media_Tareas = round(mean(Tareas_Entregadas), 2),Mediana_Tareas = median(Tareas_Entregadas),Max_Tareas = max(Tareas_Entregadas),Total_Entregas = sum(Tareas_Entregadas),.groups = "drop")
+# Gráfico principa
+ggplot(asistencia_entregas, aes(x = Nivel, y = Tareas_Entregadas, fill = Nivel)) +geom_boxplot(alpha = 0.8, outlier.shape = 16, outlier.size = 2) +geom_jitter(width = 0.2, alpha = 0.3, size = 1.5) +scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title = "Entrega de tareas según nivel de asistencia",subtitle = "Boxplot + puntos individuales",x = "Nivel de asistencia",y = "Número de tareas entregadas") +theme_minimal() +theme(axis.text.x = element_text(angle = 15, hjust = 1))
+```
+
+```{r, fig-segun-asistencia, fig.align='center', fig.pos='H', out.extra='', fig.width=6, fig.height=2}
+# Gráfico de barras
+ggplot(resumen, aes(x = Nivel, y = Media_Tareas, fill = Nivel)) +geom_col(width = 0.7, alpha = 0.9) +geom_text(aes(label = round(Media_Tareas, 2)), vjust = -0.5, size = 4, fontface = "bold") +scale_fill_manual(values = c("Alta (>=75%)"     = "steelblue","Media (50–74%)"  = "lightblue","Baja (25–49%)"   = "lightyellow","Muy baja (<25%)" = "lightsalmon")) +labs(title = "Promedio de tareas entregadas por nivel de asistencia",x = "Nivel de asistencia",y = "Media de tareas entregadas") +scale_y_continuous(expand = expansion(mult = c(0, 0.15))) + theme_minimal()
+```
+
+En la figura anterior se observa una clara relación positiva entre el nivel de asistencia y el número de tareas entregadas.
+
+Los alumnos con **asistencia alta (\>=75%)** son los que más tareas entregan. Por el contrario, los alumnos con **asistencia muy baja (\<25%)** presentan una media notablemente inferior, y un mayor número de alumnos que no entregan prácticamente ninguna tarea.
+
+También se observan outliers en el caso de gente que no firma asistencia pero sí hace entregas y gente que firma alguna asistencia más pero no hace nada.
+
+Esto confirma que los alumnos que no asisten regularmente también tienden a entregar menos tareas, lo que sugiere una correlación entre el compromiso con la asignatura (medido por la asistencia) y el rendimiento en las actividades evaluables.
